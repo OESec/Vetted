@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { UploadCloud, FileSpreadsheet, Download, CheckCircle, AlertTriangle, Trash2, Save, FlaskConical } from 'lucide-react';
 import Button from '../Button';
-import { parseCSV } from '../../utils/csvParser';
 import { MasterQuestionnaireRow } from '../../types';
 
 interface SettingsViewProps {
@@ -43,6 +42,64 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
     }
   };
 
+  // Local raw CSV parser to preserve all columns
+  const parseRawCSV = (text: string): Promise<Record<string, string>[]> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        
+        const parseLine = (line: string): string[] => {
+          const result: string[] = [];
+          let start = 0;
+          let inQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            if (line[i] === '"') {
+              inQuotes = !inQuotes;
+            } else if (line[i] === ',' && !inQuotes) {
+              let field = line.substring(start, i).trim();
+              if (field.startsWith('"') && field.endsWith('"')) {
+                field = field.substring(1, field.length - 1).replace(/""/g, '"');
+              }
+              result.push(field);
+              start = i + 1;
+            }
+          }
+          
+          let lastField = line.substring(start).trim();
+          if (lastField.startsWith('"') && lastField.endsWith('"')) {
+            lastField = lastField.substring(1, lastField.length - 1).replace(/""/g, '"');
+          }
+          result.push(lastField);
+          return result;
+        };
+
+        const lines = normalizedText.split('\n').filter(line => line.trim() !== '');
+        if (lines.length < 2) {
+           reject(new Error("File appears empty or missing headers."));
+           return;
+        }
+
+        const headers = parseLine(lines[0]).map(h => h.trim());
+        const data: Record<string, string>[] = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const rowValues = parseLine(lines[i]);
+          const rowObj: Record<string, string> = {};
+          
+          headers.forEach((header, index) => {
+             rowObj[header] = rowValues[index] || '';
+          });
+          
+          data.push(rowObj);
+        }
+        resolve(data);
+      } catch (e: any) {
+        reject(new Error("Failed to parse CSV: " + e.message));
+      }
+    });
+  };
+
   const processFile = async (file: File) => {
     setError(null);
     setSuccess(null);
@@ -53,13 +110,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
 
     try {
       const text = await file.text();
-      const rawRows = await parseCSV(text);
+      const rawRows = await parseRawCSV(text);
       
-      // Map generic rows to MasterQuestionnaireRow
-      // Expected headers roughly: Question, Pass Answer, Consider Answer, Fail Answer
-      // We'll try to find them loosely
       const mappedRows: MasterQuestionnaireRow[] = rawRows.map(r => {
-        // Find keys in the row that match our expectations loosely (case-insensitive)
+        // Case insensitive key lookup
         const keys = Object.keys(r);
         const findKey = (term: string) => keys.find(k => k.toLowerCase().includes(term.toLowerCase()));
 
@@ -68,24 +122,26 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
         const considerKey = findKey('consider');
         const failKey = findKey('fail');
 
-        if (!qKey || !passKey || !failKey) {
-            // If strictly required columns are missing for a row, it might be an issue, 
-            // but we'll fallback to empty strings or handle it in validation below
-        }
-
+        // Check for "Answer" generic if specific keys missing, though less ideal for master
+        // This parser is robust enough to find "Pass Answer" even if key is "Pass Answer"
+        
         return {
           question: r[qKey || ''] || "Untitled Question",
           passAnswer: r[passKey || ''] || "",
-          considerAnswer: r[considerKey || ''] || r[findKey('partial') || ''] || "",
+          considerAnswer: r[considerKey || ''] || "",
           failAnswer: r[failKey || ''] || ""
         };
       });
 
-      // Basic Validation
-      const validRows = mappedRows.filter(r => r.question && (r.passAnswer || r.failAnswer));
+      // Strict Validation for Master File
+      const validRows = mappedRows.filter(r => 
+          r.question && 
+          r.question !== "Untitled Question" &&
+          (r.passAnswer || r.failAnswer)
+      );
       
       if (validRows.length === 0) {
-        throw new Error("Could not identify questions and grading criteria in the CSV. Please check headers.");
+        throw new Error("Could not identify questions and grading criteria in the CSV. Please check headers (Question, Pass Answer, Consider Answer, Fail Answer).");
       }
 
       onUpdateMaster(validRows);

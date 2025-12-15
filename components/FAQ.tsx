@@ -6,7 +6,7 @@ const FAQ: React.FC = () => {
   const faqs: FAQItem[] = [
     {
       question: "Is my data secure?",
-      answer: "Absolutely. We are SOC2 Type II certified. All data is encrypted AES-256 at rest and TLS 1.3 in transit. We perform regular penetration testing and vulnerability scans."
+      answer: "All data is encrypted AES-256 at rest and TLS 1.3 in transit. We perform regular penetration testing and vulnerability scans."
     },
     {
       question: "What file formats do you support?",
@@ -18,7 +18,7 @@ const FAQ: React.FC = () => {
     },
     {
       question: "Do you offer a free trial?",
-      answer: "Yes, we offer a 14-day free trial on our Starter and Growth plans. No credit card is required to start testing the platform."
+      answer: "Yes, we offer a 2-day free trial on our Starter and Growth plans. No credit card is required to start testing the platform."
     },
     {
       question: "How does the AI work?",

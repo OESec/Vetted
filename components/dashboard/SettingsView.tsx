@@ -9,11 +9,12 @@ interface SettingsViewProps {
 }
 
 const MASTER_TEMPLATE_CSV = `Question,Pass Answer,Consider Answer,Fail Answer
-"Do you encrypt data at rest?","Yes, we use AES-256 with managed keys.","Yes, but keys are not rotated regularly.","No, data is stored in plain text."
-"Is MFA enforced?","Yes, hardware keys or app-based MFA for all access.","Yes, but SMS only or admins only.","No, password only."
-"Do you perform pentests?","Yes, annually by third party.","Yes, internal scans only.","No."
-"Do you conduct background checks?","Yes, criminal and credit checks for all employees.","Yes, but only for specific roles.","No background checks performed."
-"Do you have a documented Incident Response Plan?","Yes, tested annually.","Yes, but not tested.","No formal plan."`;
+"Do you have SOC2 Type II certification?","Yes, active SOC2 Type II report available.","SOC2 Type I only or ISO 27001.","No certification."
+"Is data encrypted at rest?","Yes, AES-256.","Yes, but older standard (e.g. 3DES).","No encryption."
+"Is Multi-Factor Authentication (MFA) enforced for all access?","Yes, enforced for all users.","Admins only.","No MFA."
+"Do you perform annual penetration testing?","Yes, by third-party.","Internal scans only.","No."
+"Do you conduct background checks on all employees?","Yes, all employees.","Key roles only.","No."
+"Do you have a documented Incident Response Plan?","Yes, tested annually.","Yes, untested.","No."`;
 
 const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpdateMaster }) => {
   const [isDragging, setIsDragging] = useState(false);

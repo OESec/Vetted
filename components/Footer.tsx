@@ -26,10 +26,7 @@ const Footer: React.FC = () => {
             <h4 className="font-bold text-lg mb-6">Product</h4>
             <ul className="space-y-3 text-sm text-gray-400">
               <li><a href="#" className="hover:text-primary transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Integrations</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Changelog</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Docs</a></li>
             </ul>
           </div>
 
@@ -37,8 +34,6 @@ const Footer: React.FC = () => {
             <h4 className="font-bold text-lg mb-6">Company</h4>
             <ul className="space-y-3 text-sm text-gray-400">
               <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>

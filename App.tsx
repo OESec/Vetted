@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -26,7 +25,7 @@ import Button from './components/Button';
 
 // --- Fully Hardcoded Dummy Data ---
 
-// Standardized Questions for all vendors
+// Standardized Questions for all vendors (The Master List)
 const QUESTIONS = {
     q1: "Do you have SOC2 Type II certification?",
     q2: "Is data encrypted at rest?",
@@ -35,6 +34,46 @@ const QUESTIONS = {
     q5: "Do you conduct background checks on all employees?",
     q6: "Do you have a documented Incident Response Plan?"
 };
+
+// Initial Master Data matching the questions above
+const INITIAL_MASTER_DATA: MasterQuestionnaireRow[] = [
+    {
+        question: QUESTIONS.q1,
+        passAnswer: "Yes, active SOC2 Type II report available.",
+        considerAnswer: "SOC2 Type I only or ISO 27001.",
+        failAnswer: "No certification."
+    },
+    {
+        question: QUESTIONS.q2,
+        passAnswer: "Yes, AES-256.",
+        considerAnswer: "Yes, but older standard (e.g. 3DES).",
+        failAnswer: "No encryption."
+    },
+    {
+        question: QUESTIONS.q3,
+        passAnswer: "Yes, enforced for all users.",
+        considerAnswer: "Admins only.",
+        failAnswer: "No MFA."
+    },
+    {
+        question: QUESTIONS.q4,
+        passAnswer: "Yes, by third-party.",
+        considerAnswer: "Internal scans only.",
+        failAnswer: "No."
+    },
+    {
+        question: QUESTIONS.q5,
+        passAnswer: "Yes, all employees.",
+        considerAnswer: "Key roles only.",
+        failAnswer: "No."
+    },
+    {
+        question: QUESTIONS.q6,
+        passAnswer: "Yes, tested annually.",
+        considerAnswer: "Yes, untested.",
+        failAnswer: "No."
+    }
+];
 
 // Report 1: Average Vendor (Score ~65)
 const R1_ROWS: QuestionnaireRow[] = [
@@ -205,7 +244,7 @@ function App() {
   // State for Data
   const [reviewSets, setReviewSets] = useState<ReviewSet[]>(INITIAL_REVIEW_SETS);
   const [reports] = useState<AuditReport[]>(DUMMY_REPORTS);
-  const [masterQuestionnaire, setMasterQuestionnaire] = useState<MasterQuestionnaireRow[]>([]);
+  const [masterQuestionnaire, setMasterQuestionnaire] = useState<MasterQuestionnaireRow[]>(INITIAL_MASTER_DATA);
   
   // State for UI Interaction
   const [activeReviewSet, setActiveReviewSet] = useState<ReviewSet | null>(null);

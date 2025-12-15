@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Check, Lock } from 'lucide-react';
 import Button from './Button';
@@ -33,7 +34,7 @@ const Pricing: React.FC = () => {
             <h3 className="text-xl font-bold text-neutralDark mb-2">Starter</h3>
             <p className="text-sm text-gray-500 mb-6">For small teams just getting started.</p>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-neutralDark">${annual ? '99' : '119'}</span>
+              <span className="text-4xl font-bold text-neutralDark">${annual ? '29' : '39'}</span>
               <span className="text-gray-500">/mo</span>
             </div>
             <Button variant="primary" className="w-full mb-8">Start Free Trial</Button>
@@ -55,7 +56,7 @@ const Pricing: React.FC = () => {
             <h3 className="text-xl font-bold text-gray-700 mb-2">Growth</h3>
             <p className="text-sm text-gray-500 mb-6">For growing teams needing automation.</p>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-gray-400">${annual ? '199' : '239'}</span>
+              <span className="text-4xl font-bold text-gray-400">${annual ? '69' : '79'}</span>
               <span className="text-gray-400">/mo</span>
             </div>
             <button disabled className="w-full py-3 px-6 rounded-lg bg-gray-200 text-gray-400 font-semibold cursor-not-allowed mb-8">Join Waitlist</button>

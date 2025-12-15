@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Check, Lock, XCircle } from 'lucide-react';
+import { Check, Lock, CircleX } from 'lucide-react';
 import Button from './Button';
 
 const Pricing: React.FC = () => {
@@ -51,7 +50,7 @@ const Pricing: React.FC = () => {
                 </li>
               ))}
                <li className="flex items-start text-sm text-neutralDark/80">
-                  <XCircle size={16} className="text-gray-400 mr-3 flex-shrink-0 mt-0.5" /> 
+                  <CircleX size={16} className="text-gray-400 mr-3 flex-shrink-0 mt-0.5" /> 
                   <span className="text-gray-500">No long-term storage (Data deleted upon session end)</span>
                 </li>
             </ul>

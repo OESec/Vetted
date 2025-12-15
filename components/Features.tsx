@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Zap, Sliders, History, Globe, Lock } from 'lucide-react';
+import { Shield, Zap, SlidersHorizontal, History, Globe, Lock } from 'lucide-react';
 
 const Features: React.FC = () => {
   const features = [
@@ -14,7 +14,7 @@ const Features: React.FC = () => {
       desc: "Reduce manual review time by 80%. AI automatically categorizes risks based on your policy."
     },
     {
-      icon: <Sliders className="text-accent" />,
+      icon: <SlidersHorizontal className="text-accent" />,
       title: "Custom Logic",
       desc: "Define your own risk thresholds. Flag specific keywords or missing certifications automatically."
     },

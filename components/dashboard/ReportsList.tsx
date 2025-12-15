@@ -8,8 +8,8 @@ import {
   ChevronDown, 
   FileText, 
   Calendar, 
-  AlertTriangle, 
-  CheckCircle, 
+  TriangleAlert, 
+  CircleCheck, 
   FolderOpen 
 } from 'lucide-react';
 import Button from '../Button';
@@ -243,11 +243,11 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                         <div className="flex space-x-3">
                           {report.summary.highRisk > 0 && (
                             <span className="text-red-600 flex items-center font-medium" title="High Risk">
-                              <AlertTriangle size={14} className="mr-1" /> {report.summary.highRisk}
+                              <TriangleAlert size={14} className="mr-1" /> {report.summary.highRisk}
                             </span>
                           )}
                           <span className="text-success flex items-center" title="Pass">
-                            <CheckCircle size={14} className="mr-1" /> {report.summary.pass}
+                            <CircleCheck size={14} className="mr-1" /> {report.summary.pass}
                           </span>
                         </div>
                       </td>

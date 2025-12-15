@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileSpreadsheet, Check, AlertTriangle, X, Loader2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, Check, TriangleAlert, X, Loader2 } from 'lucide-react';
 
 const LivePreview: React.FC = () => {
   const [stage, setStage] = useState<'upload' | 'processing' | 'results'>('upload');
@@ -49,7 +49,7 @@ const LivePreview: React.FC = () => {
               </div>
               <div className="flex items-start">
                  <div className="bg-warning/10 p-2 rounded-lg text-warning mt-1">
-                  <AlertTriangle size={18} />
+                  <TriangleAlert size={18} />
                 </div>
                 <div className="ml-4">
                   <h4 className="font-bold text-neutralDark">Risk Flagging</h4>
@@ -118,7 +118,7 @@ const LivePreview: React.FC = () => {
                       </div>
                       <div className="flex items-center space-x-3">
                          <div className="px-3 py-1 bg-red-50 text-red-600 text-sm font-bold rounded-full border border-red-100 flex items-center">
-                            <AlertTriangle size={14} className="mr-1"/> 2 Critical
+                            <TriangleAlert size={14} className="mr-1"/> 2 Critical
                          </div>
                          <button onClick={resetDemo} className="text-sm text-gray-500 hover:text-primary underline">Reset Demo</button>
                       </div>
@@ -150,7 +150,7 @@ const LivePreview: React.FC = () => {
                               <td className="px-6 py-4">
                                 {row.s === 'pass' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"><Check size={12} className="mr-1"/> Pass</span>}
                                 {row.s === 'fail' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"><X size={12} className="mr-1"/> Fail</span>}
-                                {row.s === 'warn' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800"><AlertTriangle size={12} className="mr-1"/> Review</span>}
+                                {row.s === 'warn' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800"><TriangleAlert size={12} className="mr-1"/> Review</span>}
                               </td>
                             </tr>
                           ))}

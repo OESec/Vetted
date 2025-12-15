@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { AuditReport, AnalysisResult, Decision } from '../../types';
-import { AlertTriangle, CheckCircle, HelpCircle, AlertOctagon, Download, FileText, Printer, XCircle, MinusCircle } from 'lucide-react';
+import { TriangleAlert, CircleCheck, CircleHelp, OctagonAlert, Download, FileText, Printer, CircleX, CircleMinus } from 'lucide-react';
 import Button from '../Button';
 
 interface ReportViewerProps {
@@ -12,10 +11,10 @@ interface ReportViewerProps {
 const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack }) => {
   const getRiskBadge = (risk: AnalysisResult['riskLevel']) => {
     switch(risk) {
-      case 'High': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><AlertOctagon size={12} className="mr-1"/> High Risk</span>;
-      case 'Medium': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800"><AlertTriangle size={12} className="mr-1"/> Medium Risk</span>;
-      case 'Low': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><HelpCircle size={12} className="mr-1"/> Low Risk</span>;
-      case 'Pass': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircle size={12} className="mr-1"/> Pass</span>;
+      case 'High': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><OctagonAlert size={12} className="mr-1"/> High Risk</span>;
+      case 'Medium': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800"><TriangleAlert size={12} className="mr-1"/> Medium Risk</span>;
+      case 'Low': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><CircleHelp size={12} className="mr-1"/> Low Risk</span>;
+      case 'Pass': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CircleCheck size={12} className="mr-1"/> Pass</span>;
       default: return null;
     }
   };
@@ -28,9 +27,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack }) => {
 
   const getDecisionBadge = (decision: Decision) => {
     switch(decision) {
-      case 'FAIL': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-red-600 text-white shadow-sm"><XCircle size={14} className="mr-1.5"/> FAIL</span>;
-      case 'PASS': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-green-600 text-white shadow-sm"><CheckCircle size={14} className="mr-1.5"/> PASS</span>;
-      case 'CONSIDER': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-amber-500 text-white shadow-sm"><MinusCircle size={14} className="mr-1.5"/> CONSIDER</span>;
+      case 'FAIL': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-red-600 text-white shadow-sm"><CircleX size={14} className="mr-1.5"/> FAIL</span>;
+      case 'PASS': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-green-600 text-white shadow-sm"><CircleCheck size={14} className="mr-1.5"/> PASS</span>;
+      case 'CONSIDER': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-amber-500 text-white shadow-sm"><CircleMinus size={14} className="mr-1.5"/> CONSIDER</span>;
     }
   };
 

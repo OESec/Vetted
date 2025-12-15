@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileSpreadsheet, Download, CheckCircle, AlertTriangle, Trash2, Save, FlaskConical } from 'lucide-react';
+import { CloudUpload, FileSpreadsheet, Download, CircleCheck, TriangleAlert, Trash2, Save, FlaskConical } from 'lucide-react';
 import Button from '../Button';
 import { MasterQuestionnaireRow } from '../../types';
 
@@ -199,7 +199,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
             <div className="space-y-6">
                <div className="flex items-center justify-between bg-green-50 text-green-800 px-4 py-3 rounded-lg border border-green-100">
                   <div className="flex items-center gap-2">
-                      <CheckCircle size={18} />
+                      <CircleCheck size={18} />
                       <span className="font-medium">Active Master Questionnaire: {masterQuestionnaire.length} Questions Loaded</span>
                   </div>
                   <button onClick={() => onUpdateMaster([])} className="text-sm hover:underline text-green-700 flex items-center gap-1">
@@ -251,7 +251,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${isDragging ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary/50'}`}
               >
-                <UploadCloud size={48} className="text-gray-300 mx-auto mb-4" />
+                <CloudUpload size={48} className="text-gray-300 mx-auto mb-4" />
                 <p className="text-lg font-medium text-neutralDark">Drag & drop Master CSV here</p>
                 <p className="text-sm text-gray-400 mb-6">
                   Must include columns for <strong>Question</strong>, <strong>Pass Answer</strong>, <strong>Consider Answer</strong>, and <strong>Fail Answer</strong>.
@@ -283,7 +283,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                 
                 {error && (
                   <div className="mt-6 bg-red-50 border border-red-100 text-red-600 p-3 rounded-lg flex items-center justify-center">
-                    <AlertTriangle size={16} className="mr-2" />
+                    <TriangleAlert size={16} className="mr-2" />
                     {error}
                   </div>
                 )}
@@ -310,7 +310,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
           
           {success && (
              <div className="mt-4 bg-green-50 border border-green-100 text-green-600 p-3 rounded-lg flex items-center justify-center animate-fade-in-up">
-               <CheckCircle size={16} className="mr-2" />
+               <CircleCheck size={16} className="mr-2" />
                {success}
              </div>
           )}

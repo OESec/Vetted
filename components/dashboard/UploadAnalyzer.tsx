@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileSpreadsheet, Loader2, AlertTriangle, FileText, FlaskConical, Download } from 'lucide-react';
+import { CloudUpload, FileSpreadsheet, Loader2, TriangleAlert, FileText, FlaskConical, Download } from 'lucide-react';
 import Button from '../Button';
 import { parseCSV } from '../../utils/csvParser';
 import { analyzeQuestionnaire } from '../../services/aiService';
@@ -175,7 +175,7 @@ const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete }) =
                 </div>
               ) : (
                 <>
-                  <UploadCloud size={48} className="text-gray-300 mx-auto mb-4" />
+                  <CloudUpload size={48} className="text-gray-300 mx-auto mb-4" />
                   <p className="text-lg font-medium text-neutralDark">Drag & drop your CSV here</p>
                   <p className="text-sm text-gray-400 mb-6">Must contain "Question" and "Answer" columns</p>
                   
@@ -208,7 +208,7 @@ const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete }) =
 
             {error && (
               <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-lg flex items-center">
-                <AlertTriangle size={18} className="mr-2" />
+                <TriangleAlert size={18} className="mr-2" />
                 {error}
               </div>
             )}

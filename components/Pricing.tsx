@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, Lock } from 'lucide-react';
+import { Check, Lock, XCircle } from 'lucide-react';
 import Button from './Button';
 
 const Pricing: React.FC = () => {
@@ -39,11 +39,21 @@ const Pricing: React.FC = () => {
             </div>
             <Button variant="primary" className="w-full mb-8">Start Free Trial</Button>
             <ul className="space-y-4 flex-1">
-              {['Up to 50 vendors/year', 'Standard AI Analysis', 'Email Support', '1 User Seat', 'Basic Export (PDF)'].map((feat, i) => (
+              {[
+                  'Up to 50 vendors/year', 
+                  'Standard AI Analysis', 
+                  'Email Support', 
+                  '1 User Seat', 
+                  'Basic Export (PDF)'
+                ].map((feat, i) => (
                 <li key={i} className="flex items-center text-sm text-neutralDark/80">
                   <Check size={16} className="text-success mr-3 flex-shrink-0" /> {feat}
                 </li>
               ))}
+               <li className="flex items-start text-sm text-neutralDark/80">
+                  <XCircle size={16} className="text-gray-400 mr-3 flex-shrink-0 mt-0.5" /> 
+                  <span className="text-gray-500">No long-term storage (Data deleted upon session end)</span>
+                </li>
             </ul>
           </div>
 

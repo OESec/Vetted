@@ -1,25 +1,26 @@
+
 import React from 'react';
-import { UploadCloud, Cpu, FileText } from 'lucide-react';
+import { CloudUpload, Cpu, FileCheck } from 'lucide-react';
 
 const HowItWorks: React.FC = () => {
   const steps = [
     {
-      icon: <UploadCloud size={32} />,
-      title: "1. Upload Spreadsheet",
-      description: "Drag and drop any vendor questionnaire (Excel, CSV). Our parser instantly maps columns and identifies questions.",
+      icon: <FileCheck size={32} />,
+      title: "1. Define Standards",
+      description: "First, upload your 'Master' spreadsheet containing your ideal answers. This establishes the ground truth for your security policy.",
+      color: "bg-purple-100 text-purple-600"
+    },
+    {
+      icon: <CloudUpload size={32} />,
+      title: "2. Upload Vendor Responses",
+      description: "Drag and drop any vendor questionnaire (Excel, CSV). Our parser instantly maps their columns to your standard.",
       color: "bg-blue-100 text-primary"
     },
     {
       icon: <Cpu size={32} />,
-      title: "2. AI Analysis",
-      description: "Our engine checks answers against your knowledge base, flags risks, and generates compliance scores automatically.",
+      title: "3. AI Gap Analysis",
+      description: "Our engine compares the vendor's answers against your Master Standard, automatically flagging risks and missing evidence.",
       color: "bg-teal-100 text-accent"
-    },
-    {
-      icon: <FileText size={32} />,
-      title: "3. Export & Share",
-      description: "Review the pre-filled report, adjust if needed, and export a polished response back to the vendor or procurement.",
-      color: "bg-purple-100 text-purple-600"
     }
   ];
 
@@ -29,7 +30,7 @@ const HowItWorks: React.FC = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-neutralDark mb-4">How it works</h2>
           <p className="text-lg text-neutralDark/70 max-w-2xl mx-auto">
-            From raw spreadsheet to risk assessment in three simple steps.
+            Setup your standard once, then automate every review.
           </p>
         </div>
 

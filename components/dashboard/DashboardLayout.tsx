@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { LayoutDashboard, FileText, Settings, LogOut, Plus, ShieldCheck, PieChart } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Plus, ShieldCheck, ChartPie } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

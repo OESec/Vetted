@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { ReviewSet, AuditReport } from '../../types';
-import { ArrowLeft, Award, AlertTriangle, CheckCircle, ChevronRight, BarChart, FilePlus, Upload } from 'lucide-react';
+import { ArrowLeft, Award, TriangleAlert, CircleCheck, ChevronRight, ChartBar, FilePlus, Upload } from 'lucide-react';
 import Button from '../Button';
 
 interface ReviewSetViewerProps {
@@ -77,7 +76,7 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
           {/* Comparison Table */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center space-x-2">
-                <BarChart size={18} className="text-gray-400" />
+                <ChartBar size={18} className="text-gray-400" />
                 <h3 className="font-bold text-gray-700">Supplier Comparison Matrix</h3>
             </div>
             <div className="overflow-x-auto">
@@ -128,7 +127,7 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
                             <td className="px-6 py-4">
                                 {isWinner ? (
                                     <div className="flex items-center text-green-700 text-sm font-medium">
-                                        <CheckCircle size={16} className="mr-1.5" /> Recommended Choice
+                                        <CircleCheck size={16} className="mr-1.5" /> Recommended Choice
                                     </div>
                                 ) : (
                                     <div className="flex items-center text-gray-500 text-sm">

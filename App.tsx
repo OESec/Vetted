@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -21,7 +20,7 @@ import SettingsView from './components/dashboard/SettingsView';
 import CreateReviewSetModal from './components/dashboard/CreateReviewSetModal';
 
 import { AuditReport, AnalysisResult, QuestionnaireRow, ReviewSet, MasterQuestionnaireRow } from './types';
-import { AlertTriangle, CheckCircle, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2 } from 'lucide-react';
+import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2 } from 'lucide-react';
 import Button from './components/Button';
 
 // --- Fully Hardcoded Dummy Data ---

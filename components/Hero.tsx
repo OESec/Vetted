@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from './Button';
-import { FileSpreadsheet, CheckCircle2, ShieldAlert, Zap } from 'lucide-react';
+import { FileSpreadsheet, CircleCheck, ShieldAlert, Zap } from 'lucide-react';
 
 interface HeroProps {
   onNavigateToApp?: () => void;
@@ -79,7 +79,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigateToApp }) => {
                   {/* Result Badge Popup */}
                   <div className="absolute bottom-8 right-8 glass-card p-4 rounded-xl shadow-lg flex items-center space-x-3 transform translate-y-2 animate-[bounce_3s_infinite]">
                     <div className="bg-success/10 p-2 rounded-full text-success">
-                      <CheckCircle2 size={20} />
+                      <CircleCheck size={20} />
                     </div>
                     <div>
                       <div className="text-xs text-gray-500 uppercase font-bold">Risk Score</div>

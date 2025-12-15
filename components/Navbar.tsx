@@ -1,13 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ShieldCheck } from 'lucide-react';
 import Button from './Button';
 import { NavLink } from '../types';
 
 const navLinks: NavLink[] = [
-  { label: 'Features', href: '#features' },
   { label: 'How it Works', href: '#how-it-works' },
+  { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
-  { label: 'Resources', href: '#faq' },
 ];
 
 interface NavbarProps {
@@ -32,11 +32,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigateToApp }) => {
     const element = document.getElementById(targetId);
     
     if (element) {
-      // The scroll-padding-top in CSS handles the offset, but smooth behavior ensures it looks good
       element.scrollIntoView({ behavior: 'smooth' });
       setIsOpen(false);
-      
-      // Update URL hash without jumping
       window.history.pushState(null, '', href);
     }
   };
@@ -54,7 +51,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigateToApp }) => {
             </a>
           </div>
 
-          {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <a 
@@ -77,7 +73,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigateToApp }) => {
             </div>
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button 
               onClick={() => setIsOpen(!isOpen)}
@@ -90,7 +85,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigateToApp }) => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-lg animate-fade-in-up">
           <div className="px-4 pt-2 pb-6 space-y-4">

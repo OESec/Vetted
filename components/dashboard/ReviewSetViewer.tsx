@@ -1,16 +1,17 @@
 
 import React from 'react';
 import { ReviewSet, AuditReport } from '../../types';
-import { ArrowLeft, Award, AlertTriangle, CheckCircle, ChevronRight, BarChart, FilePlus } from 'lucide-react';
+import { ArrowLeft, Award, AlertTriangle, CheckCircle, ChevronRight, BarChart, FilePlus, Upload } from 'lucide-react';
 import Button from '../Button';
 
 interface ReviewSetViewerProps {
   reviewSet: ReviewSet;
   onBack: () => void;
   onViewReport: (report: AuditReport) => void;
+  onAddReport: () => void;
 }
 
-const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, onViewReport }) => {
+const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, onViewReport, onAddReport }) => {
   // Logic to find the best report
   const sortedReports = [...reviewSet.reports].sort((a, b) => b.summary.score - a.summary.score);
   const bestReport = sortedReports[0];
@@ -27,25 +28,33 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
                 <h2 className="text-3xl font-bold text-neutralDark">{reviewSet.name}</h2>
                 <p className="text-gray-500 mt-2 max-w-2xl">{reviewSet.description}</p>
             </div>
-            <div className="mt-4 md:mt-0">
+            <div className="mt-4 md:mt-0 flex items-center gap-3">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                     reviewSet.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                 }`}>
                     Status: {reviewSet.status}
                 </span>
+                {reviewSet.reports.length > 0 && (
+                    <Button size="sm" onClick={onAddReport}>
+                        <Upload size={14} className="mr-2" /> Add Report
+                    </Button>
+                )}
             </div>
         </div>
       </div>
 
       {reviewSet.reports.length === 0 ? (
-        <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                <FilePlus size={32} />
+        <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-16 text-center">
+            <div className="w-20 h-20 bg-white shadow-sm rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
+                <FilePlus size={40} />
             </div>
-            <h3 className="text-lg font-bold text-gray-700">No Reports Yet</h3>
-            <p className="text-gray-500 max-w-md mx-auto mt-2">
-                This review set is empty. Upload new vendor audits or add existing reports to start comparing.
+            <h3 className="text-xl font-bold text-neutralDark">This review set is empty</h3>
+            <p className="text-gray-500 max-w-md mx-auto mt-2 mb-8">
+                Upload your first vendor questionnaire to start the comparison.
             </p>
+            <Button size="lg" onClick={onAddReport} icon>
+                Upload Audit Report
+            </Button>
         </div>
       ) : (
         <>

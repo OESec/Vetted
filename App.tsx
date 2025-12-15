@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -243,13 +244,14 @@ function App() {
   
   // State for Data
   const [reviewSets, setReviewSets] = useState<ReviewSet[]>(INITIAL_REVIEW_SETS);
-  const [reports] = useState<AuditReport[]>(DUMMY_REPORTS);
+  const [reports, setReports] = useState<AuditReport[]>(DUMMY_REPORTS);
   const [masterQuestionnaire, setMasterQuestionnaire] = useState<MasterQuestionnaireRow[]>(INITIAL_MASTER_DATA);
   
   // State for UI Interaction
   const [activeReviewSet, setActiveReviewSet] = useState<ReviewSet | null>(null);
   const [currentReport, setCurrentReport] = useState<AuditReport | null>(null);
   const [isCreateSetModalOpen, setIsCreateSetModalOpen] = useState(false);
+  const [pendingSetUploadId, setPendingSetUploadId] = useState<string | null>(null);
 
   // Transitions
   const handleLogin = () => setView('dashboard');
@@ -261,7 +263,34 @@ function App() {
   };
 
   const handleAnalysisComplete = (report: AuditReport) => {
-    setCurrentReport(report);
+    // 1. Add to global reports
+    setReports(prev => [report, ...prev]);
+
+    // 2. Check if this was a targeted upload for a specific Review Set
+    if (pendingSetUploadId) {
+      // Add report to the specific set
+      const updatedSets = reviewSets.map(set => {
+        if (set.id === pendingSetUploadId) {
+          return { ...set, reports: [report, ...set.reports] };
+        }
+        return set;
+      });
+      setReviewSets(updatedSets);
+      
+      // Auto-open the set view again (Seamless Flow)
+      const targetSet = updatedSets.find(s => s.id === pendingSetUploadId);
+      if (targetSet) {
+        setActiveReviewSet(targetSet);
+      }
+      
+      // Reset flow
+      setPendingSetUploadId(null);
+      // We don't set currentReport here because we want to see the Set View, not the individual report
+      setCurrentReport(null);
+    } else {
+      // Standard flow: Just show the report result
+      setCurrentReport(report);
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -272,6 +301,7 @@ function App() {
           // Otherwise clear everything
           setCurrentReport(null);
           setActiveReviewSet(null);
+          setPendingSetUploadId(null); // Clear any pending state just in case
       }
   };
 
@@ -288,6 +318,7 @@ function App() {
       setDashboardTab(tab);
       setCurrentReport(null);
       setActiveReviewSet(null);
+      setPendingSetUploadId(null);
   };
 
   // --- CRUD Handlers ---
@@ -303,6 +334,18 @@ function App() {
     };
     setReviewSets([newSet, ...reviewSets]);
     setIsCreateSetModalOpen(false);
+    
+    // Auto-open the new set
+    setActiveReviewSet(newSet);
+    setCurrentReport(null);
+  };
+
+  const handleRequestUploadForSet = () => {
+    if (activeReviewSet) {
+      setPendingSetUploadId(activeReviewSet.id);
+      setActiveReviewSet(null); // Temporarily close set view
+      setDashboardTab('upload'); // Switch to upload view
+    }
   };
 
   const handleArchiveSet = (id: string, e: React.MouseEvent) => {
@@ -326,6 +369,7 @@ function App() {
                 reviewSet={activeReviewSet} 
                 onBack={handleBackToDashboard} 
                 onViewReport={handleOpenReport}
+                onAddReport={handleRequestUploadForSet}
             />
         );
     }
@@ -348,7 +392,7 @@ function App() {
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <p className="text-gray-500 text-sm font-medium">Avg Risk Score</p>
                         <p className="text-3xl font-bold text-success mt-1">
-                            {Math.round(reports.reduce((acc, curr) => acc + curr.summary.score, 0) / reports.length)}/100
+                            {reports.length > 0 ? Math.round(reports.reduce((acc, curr) => acc + curr.summary.score, 0) / reports.length) : 0}/100
                         </p>
                     </div>
                 </div>

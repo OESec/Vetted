@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
-import { ShieldCheck, Twitter, Linkedin, Github, X } from 'lucide-react';
+import { Twitter, Linkedin, Github, X } from 'lucide-react';
+import Logo from './Logo';
 
 const Footer: React.FC = () => {
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | 'security' | 'cookies' | null>(null);
@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
           
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center space-x-2 mb-6">
-              <ShieldCheck className="text-primary" size={32} />
+              <Logo className="w-8 h-8 text-primary" />
               <span className="text-2xl font-serif font-bold">Vetted</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">

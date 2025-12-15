@@ -37,10 +37,6 @@ const Hero: React.FC<HeroProps> = ({ onNavigateToApp }) => {
               <Button onClick={onNavigateToApp} variant="primary" size="lg" icon>Start Free Trial</Button>
               <Button onClick={onNavigateToApp} variant="secondary" size="lg">Request Live Demo</Button>
             </div>
-            
-            <p className="text-sm text-neutralDark/50 font-medium">
-              Used by security teams at Fortune 100s. No credit card required.
-            </p>
           </div>
 
           {/* Right Column: Interactive Visual */}

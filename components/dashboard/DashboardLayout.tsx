@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FileText, Settings, LogOut, Plus, ShieldCheck, ChartPie } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Plus, ChartPie } from 'lucide-react';
+import Logo from '../Logo';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Sidebar */}
       <aside className="w-64 bg-neutralDark text-white hidden md:flex flex-col border-r border-gray-800">
         <div className="p-6 flex items-center space-x-2 border-b border-gray-800">
-          <ShieldCheck className="text-primary" size={24} />
+          <Logo className="w-8 h-8 text-primary" />
           <span className="text-xl font-serif font-bold">Vetted</span>
         </div>
 

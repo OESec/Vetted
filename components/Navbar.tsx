@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ShieldCheck } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import Button from './Button';
+import Logo from './Logo';
 import { NavLink } from '../types';
 
 const navLinks: NavLink[] = [
@@ -44,9 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigateToApp }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <a href="#" className="flex items-center space-x-2 group">
-              <div className="bg-gradient-to-br from-primary to-accent p-2 rounded-lg text-white group-hover:scale-110 transition-transform">
-                <ShieldCheck size={24} />
-              </div>
+              <Logo className="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-xl font-serif font-bold text-neutralDark">Vetted</span>
             </a>
           </div>

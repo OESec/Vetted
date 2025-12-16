@@ -49,7 +49,13 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
         <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-                <Logo className="w-12 h-12 text-primary" />
+                <button 
+                  onClick={onBack} 
+                  className="hover:scale-105 transition-transform focus:outline-none"
+                  aria-label="Back to Home"
+                >
+                  <Logo className="w-12 h-12 text-primary" />
+                </button>
             </div>
           <h2 className="text-2xl font-bold text-neutralDark">{isSignUp ? 'Create an Account' : 'Welcome Back'}</h2>
           <p className="text-gray-500 mt-2">

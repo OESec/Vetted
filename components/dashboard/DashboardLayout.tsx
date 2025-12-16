@@ -8,6 +8,7 @@ interface DashboardLayoutProps {
   activeTab: 'overview' | 'reports' | 'upload' | 'settings';
   onTabChange: (tab: 'overview' | 'reports' | 'upload' | 'settings') => void;
   userEmail?: string;
+  onLogoClick?: () => void;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
@@ -15,16 +16,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   onLogout, 
   activeTab, 
   onTabChange,
-  userEmail
+  userEmail,
+  onLogoClick
 }) => {
   return (
     <div className="flex h-screen bg-neutralLight overflow-hidden">
       {/* Sidebar */}
       <aside className="w-64 bg-neutralDark text-white hidden md:flex flex-col border-r border-gray-800">
-        <div className="p-6 flex items-center space-x-2 border-b border-gray-800">
+        <button 
+          onClick={onLogoClick} 
+          className="p-6 flex items-center space-x-2 border-b border-gray-800 hover:bg-gray-800/50 transition-colors text-left w-full focus:outline-none"
+          aria-label="Back to Landing Page"
+        >
           <Logo className="w-8 h-8 text-primary" />
           <span className="text-xl font-serif font-bold">Vetted</span>
-        </div>
+        </button>
 
         <nav className="flex-1 p-4 space-y-2">
           <button 

@@ -462,7 +462,14 @@ function App() {
   };
 
   // Transitions
-  const handleLogin = () => setView('auth');
+  const handleLogin = () => {
+    if (session) {
+      setView('dashboard');
+    } else {
+      setView('auth');
+    }
+  };
+  
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -706,6 +713,7 @@ function App() {
         activeTab={dashboardTab} 
         onTabChange={handleTabChange}
         userEmail={session?.user?.email}
+        onLogoClick={() => setView('landing')}
       >
         {renderDashboardContent()}
         <CreateReviewSetModal 

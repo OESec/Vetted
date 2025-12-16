@@ -22,6 +22,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -249,7 +250,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                            </tr>
                        </thead>
                        <tbody className="bg-white divide-y divide-gray-200">
-                           {masterQuestionnaire.slice(0, 5).map((row, i) => (
+                           {(isExpanded ? masterQuestionnaire : masterQuestionnaire.slice(0, 5)).map((row, i) => (
                                <tr key={i}>
                                    <td className="px-4 py-2 text-sm text-gray-900">{row.question}</td>
                                    <td className="px-4 py-2 text-sm text-gray-600">{row.passAnswer}</td>
@@ -257,10 +258,23 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                                    <td className="px-4 py-2 text-sm text-gray-600">{row.failAnswer}</td>
                                </tr>
                            ))}
-                           {masterQuestionnaire.length > 5 && (
-                               <tr>
-                                   <td colSpan={4} className="px-4 py-2 text-center text-xs text-gray-400">
-                                       ...and {masterQuestionnaire.length - 5} more rows
+                           {masterQuestionnaire.length > 5 && !isExpanded && (
+                               <tr 
+                                  onClick={() => setIsExpanded(true)}
+                                  className="cursor-pointer hover:bg-gray-50 transition-colors group"
+                               >
+                                   <td colSpan={4} className="px-4 py-3 text-center text-xs text-gray-500 font-medium group-hover:text-primary">
+                                       ...and {masterQuestionnaire.length - 5} more rows (Click to expand)
+                                   </td>
+                               </tr>
+                           )}
+                           {masterQuestionnaire.length > 5 && isExpanded && (
+                               <tr 
+                                  onClick={() => setIsExpanded(false)}
+                                  className="cursor-pointer hover:bg-gray-50 transition-colors group"
+                               >
+                                   <td colSpan={4} className="px-4 py-3 text-center text-xs text-gray-400 group-hover:text-gray-600">
+                                       Show less
                                    </td>
                                </tr>
                            )}

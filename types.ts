@@ -46,7 +46,7 @@ export interface AnalysisResult {
   complianceFlag?: string; // e.g., "Non-compliant with SOC2"
 }
 
-export type Decision = 'FAIL' | 'CONSIDER' | 'PASS';
+export type Decision = 'UNACCEPTABLE' | 'CONSIDER' | 'ACCEPTED';
 
 export interface AuditReport {
   id: string;

@@ -30,7 +30,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigateToApp }) => {
             </h1>
             
             <p className="text-lg lg:text-xl text-neutralDark/70 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Upload any spreadsheet. Get validated, prioritized feedback and evidence requests—instantly. Eliminate the vendor risk bottleneck.
+              Upload any spreadsheet. Get validated, prioritised feedback and evidence requests—instantly. Eliminate the vendor risk bottleneck.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-6">

@@ -56,21 +56,21 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
       case 'High': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"><OctagonAlert size={12} className="mr-1"/> High Risk</span>;
       case 'Medium': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"><TriangleAlert size={12} className="mr-1"/> Medium Risk</span>;
       case 'Low': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"><CircleHelp size={12} className="mr-1"/> Low Risk</span>;
-      case 'Pass': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"><CircleCheck size={12} className="mr-1"/> Pass</span>;
+      case 'Pass': return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"><CircleCheck size={12} className="mr-1"/> Low Risk</span>;
       default: return null;
     }
   };
 
   const getDecision = (risk: AnalysisResult['riskLevel']): Decision => {
-    if (risk === 'High') return 'FAIL';
-    if (risk === 'Pass') return 'PASS';
+    if (risk === 'High') return 'UNACCEPTABLE';
+    if (risk === 'Pass') return 'ACCEPTED';
     return 'CONSIDER'; // Medium or Low
   };
 
   const getDecisionBadge = (decision: Decision) => {
     switch(decision) {
-      case 'FAIL': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-red-600 text-white shadow-sm dark:bg-red-700"><CircleX size={14} className="mr-1.5"/> FAIL</span>;
-      case 'PASS': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-green-600 text-white shadow-sm dark:bg-green-700"><CircleCheck size={14} className="mr-1.5"/> PASS</span>;
+      case 'UNACCEPTABLE': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-red-600 text-white shadow-sm dark:bg-red-700"><CircleX size={14} className="mr-1.5"/> UNACCEPTABLE</span>;
+      case 'ACCEPTED': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-green-600 text-white shadow-sm dark:bg-green-700"><CircleCheck size={14} className="mr-1.5"/> ACCEPTED</span>;
       case 'CONSIDER': return <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-amber-500 text-white shadow-sm dark:bg-amber-600"><CircleMinus size={14} className="mr-1.5"/> CONSIDER</span>;
     }
   };
@@ -127,7 +127,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
            // Fail > Consider > Pass
            const decA = getDecision(resA.riskLevel);
            const decB = getDecision(resB.riskLevel);
-           const map = { FAIL: 2, CONSIDER: 1, PASS: 0 };
+           const map = { UNACCEPTABLE: 2, CONSIDER: 1, ACCEPTED: 0 };
            valA = map[decA];
            valB = map[decB];
         }
@@ -156,12 +156,16 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
         if(result) {
             const safe = (str: string | undefined) => `"${(str || '').replace(/"/g, '""')}"`;
             const decision = getDecision(result.riskLevel);
+            // Export the raw risk level string ('Pass') or the display string ('Low Risk')? 
+            // Usually exports prefer raw data, but let's map it to match UI request.
+            const displayRisk = result.riskLevel === 'Pass' ? 'Low Risk' : result.riskLevel;
+            
             csvRows.push([
                 safe(row.id),
                 safe(row.question),
                 safe(row.answer),
                 safe(row.category),
-                safe(result.riskLevel),
+                safe(displayRisk),
                 safe(decision),
                 safe(result.feedback),
                 result.evidenceRequired ? 'Yes' : 'No'
@@ -310,7 +314,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
                       }`}>
                         {filters[level] && <Check size={12} className="text-white" />}
                       </div>
-                      <span className="text-sm text-gray-700 dark:text-gray-200">{level}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-200">
+                          {level === 'Pass' ? 'Low Risk (Pass)' : level}
+                      </span>
                     </label>
                  ))}
                </div>

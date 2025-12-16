@@ -107,7 +107,7 @@ const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete }) =
       }
 
       // 2. Analyze
-      setLoadingStep(`Analyzing ${rows.length} responses against compliance models...`);
+      setLoadingStep(`Analysing ${rows.length} responses against compliance models...`);
       const results = await analyzeQuestionnaire(rows);
 
       // 3. Compile Report

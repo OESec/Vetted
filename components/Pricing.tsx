@@ -85,7 +85,7 @@ const Pricing: React.FC = () => {
                <Lock size={12} className="mr-1" /> Coming Soon
              </div>
             <h3 className="text-xl font-bold text-gray-700 mb-2">Enterprise</h3>
-            <p className="text-sm text-gray-500 mb-6">For large organizations with strict compliance.</p>
+            <p className="text-sm text-gray-500 mb-6">For large organisations with strict compliance.</p>
             <div className="mb-6">
               <span className="text-4xl font-bold text-gray-400">Custom</span>
             </div>

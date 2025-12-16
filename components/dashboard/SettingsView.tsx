@@ -394,7 +394,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                     New Standard
                 </button>
             ) : (
-                <span className="text-xs text-gray-400 italic ml-2 border border-transparent px-2 py-1">Limit Reached</span>
+                <span className="text-xs text-gray-400 italic ml-2 border border-transparent px-2 py-1">Only a maximum of five (5) Master Questionnaires are allowed</span>
             )}
         </div>
       </div>
@@ -435,7 +435,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                      <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)} className="dark:bg-gray-700 dark:text-white dark:border-gray-600">
                         <Edit2 size={16} className="mr-2" /> Edit Manually
                      </Button>
-                     <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
+                     <Button variant="secondary" size="sm" onClick={handleDownloadTemplate} className="dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                         <Download size={16} className="mr-2" /> Template
                      </Button>
                  </>

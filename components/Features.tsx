@@ -11,7 +11,7 @@ const Features: React.FC = () => {
     {
       icon: <Zap className="text-warning" />,
       title: "Instant Automation",
-      desc: "Reduce manual review time by 80%. AI automatically categorizes risks based on your policy."
+      desc: "Reduce manual review time by 80%. AI automatically categorises risks based on your policy."
     },
     {
       icon: <SlidersHorizontal className="text-accent" />,

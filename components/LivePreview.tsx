@@ -69,7 +69,7 @@ const LivePreview: React.FC = () => {
                   <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                   <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 </div>
-                <div className="text-xs font-mono text-gray-400">app.vetted.ai</div>
+                <div className="text-xs font-mono text-gray-400">vetted.sec-hub.online</div>
                 <div></div>
               </div>
 
@@ -93,7 +93,7 @@ const LivePreview: React.FC = () => {
                 {stage === 'processing' && (
                   <div className="w-full max-w-md text-center">
                     <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-6" />
-                    <h3 className="text-xl font-bold text-neutralDark mb-2">Analyzing Responses...</h3>
+                    <h3 className="text-xl font-bold text-neutralDark mb-2">Analysing Responses...</h3>
                     <p className="text-neutralDark/50 mb-6">Matching against security policies</p>
                     
                     <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">

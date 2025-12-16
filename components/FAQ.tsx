@@ -6,7 +6,7 @@ const FAQ: React.FC = () => {
   const faqs: FAQItem[] = [
     {
       question: "Is my data secure?",
-      answer: "All data is encrypted AES-256 at rest and TLS 1.3 in transit. We perform regular penetration testing and vulnerability scans."
+      answer: "Our system is built on platforms that encrypt all data at rest using AES-256 and all in transit using TLS 1.3"
     },
     {
       question: "What file formats do you support?",

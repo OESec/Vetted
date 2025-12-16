@@ -623,7 +623,7 @@ function App() {
                         <p className="text-3xl font-bold text-primary mt-1">{reports.length}</p>
                          {hoveredOverviewMetric === 'suppliers' && (
                             <div className="absolute z-20 top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 p-3 bg-neutralDark text-white text-xs rounded-lg shadow-xl pointer-events-none animate-fade-in-up">
-                                Total individual reports uploaded and analyzed.
+                                Total individual reports uploaded and analysed.
                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-neutralDark"></div>
                             </div>
                         )}

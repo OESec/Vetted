@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { Twitter, Linkedin, Github, X } from 'lucide-react';
+import { Twitter, Linkedin, Github, X, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import Logo from './Logo';
+import Button from './Button';
 
 const Footer: React.FC = () => {
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | 'security' | 'cookies' | null>(null);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  
+  // Contact Form State
+  const [contactStatus, setContactStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -11,6 +17,27 @@ const Footer: React.FC = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactStatus('submitting');
+    
+    // Simulate network request to send email to pam33na@yahoo.com
+    console.log(`Sending message to pam33na@yahoo.com from ${formData.email}: ${formData.message}`);
+    
+    setTimeout(() => {
+        setContactStatus('success');
+    }, 1500);
+  };
+
+  const resetContactForm = () => {
+      setIsContactOpen(false);
+      // Short delay to reset state after transition
+      setTimeout(() => {
+          setContactStatus('idle');
+          setFormData({ name: '', email: '', message: '' });
+      }, 300);
   };
 
   const LegalModal = () => {
@@ -27,7 +54,7 @@ const Footer: React.FC = () => {
       },
       security: {
         title: "Security",
-        text: "We utilize industry-standard encryption (AES-256) for all data at rest and TLS 1.3 for data in transit. Our infrastructure is hosted on AWS with strict access controls. Regular automated vulnerability scans are performed to ensure platform integrity."
+        text: "Our system is built on platforms that encrypt all data at rest using AES-256 and all data in transit using TLS 1.3."
       },
       cookies: {
         title: "Cookie Settings",
@@ -98,8 +125,8 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold text-lg mb-6">Company</h4>
             <ul className="space-y-3 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
+              {/* Removed About Us */}
+              <li><button onClick={() => setIsContactOpen(true)} className="hover:text-primary transition-colors text-left">Contact</button></li>
             </ul>
           </div>
 
@@ -126,6 +153,78 @@ const Footer: React.FC = () => {
       </div>
       
       <LegalModal />
+
+      {/* Contact Form Modal */}
+      {isContactOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in-up">
+              <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 relative">
+                  <button 
+                      onClick={resetContactForm}
+                      className="absolute top-4 right-4 text-gray-400 hover:text-neutralDark"
+                  >
+                      <X size={20} />
+                  </button>
+                  
+                  {contactStatus === 'success' ? (
+                      <div className="text-center py-8">
+                          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                              <CheckCircle2 size={32} />
+                          </div>
+                          <h3 className="text-2xl font-bold text-neutralDark mb-2">Message Sent</h3>
+                          <p className="text-neutralDark/70 mb-8">
+                              Thank you for your message. If a response is required, we will be in touch.
+                          </p>
+                          <Button onClick={resetContactForm} variant="outline" className="border-gray-300 text-neutralDark hover:bg-gray-50">
+                              Close
+                          </Button>
+                      </div>
+                  ) : (
+                      <>
+                        <h3 className="text-2xl font-bold text-neutralDark mb-2">Contact Us</h3>
+                        <p className="text-neutralDark/60 mb-6">Send us a message and we'll get back to you shortly.</p>
+                        
+                        <form onSubmit={handleContactSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <input 
+                                    type="text" 
+                                    required 
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-neutralDark focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                                    value={formData.name}
+                                    onChange={e => setFormData({...formData, name: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input 
+                                    type="email" 
+                                    required 
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-neutralDark focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                                    value={formData.email}
+                                    onChange={e => setFormData({...formData, email: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                                <textarea 
+                                    required 
+                                    rows={4}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-neutralDark focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                                    value={formData.message}
+                                    onChange={e => setFormData({...formData, message: e.target.value})}
+                                />
+                            </div>
+                            <div className="pt-2">
+                                <Button type="submit" className="w-full" disabled={contactStatus === 'submitting'}>
+                                    {contactStatus === 'submitting' ? <Loader2 className="animate-spin" /> : <><Send size={16} className="mr-2" /> Send Message</>}
+                                </Button>
+                            </div>
+                        </form>
+                      </>
+                  )}
+              </div>
+          </div>
+      )}
     </footer>
   );
 };

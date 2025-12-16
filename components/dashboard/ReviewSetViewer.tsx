@@ -1,6 +1,6 @@
 import React from 'react';
 import { ReviewSet, AuditReport } from '../../types';
-import { ArrowLeft, Award, TriangleAlert, CircleCheck, ChevronRight, ChartBar, FilePlus, Upload } from 'lucide-react';
+import { ArrowLeft, Award, TriangleAlert, CircleCheck, ChevronRight, ChartBar, FilePlus, Upload, ShieldCheck, ShieldAlert } from 'lucide-react';
 import Button from '../Button';
 
 interface ReviewSetViewerProps {
@@ -14,6 +14,7 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
   // Logic to find the best report
   const sortedReports = [...reviewSet.reports].sort((a, b) => b.summary.score - a.summary.score);
   const bestReport = sortedReports[0];
+  const singleMode = sortedReports.length === 1;
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -57,27 +58,42 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
         </div>
       ) : (
         <>
-          {/* Recommendation Engine */}
+          {/* AI Insight Box */}
           <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-2xl p-6 shadow-sm">
             <div className="flex items-start space-x-4">
-                <div className="bg-indigo-600 text-white p-3 rounded-xl shadow-lg">
-                    <Award size={28} />
+                <div className={`p-3 rounded-xl shadow-lg ${singleMode ? 'bg-blue-600 text-white' : 'bg-indigo-600 text-white'}`}>
+                    {singleMode ? <ShieldCheck size={28} /> : <Award size={28} />}
                 </div>
                 <div>
-                    <h3 className="text-lg font-bold text-indigo-900">AI Recommendation</h3>
-                    <p className="text-indigo-800 mt-1">
-                        Based on security score and risk profile, <strong>{bestReport.fileName.replace('.csv', '')}</strong> is the strongest candidate. 
-                        They scored <span className="font-bold">{bestReport.summary.score}/100</span> with fewer critical risks than competitors.
+                    <h3 className={`text-lg font-bold ${singleMode ? 'text-blue-900' : 'text-indigo-900'}`}>
+                        {singleMode ? 'Analysis Summary' : 'AI Recommendation'}
+                    </h3>
+                    <p className={`${singleMode ? 'text-blue-800' : 'text-indigo-800'} mt-1`}>
+                        {singleMode ? (
+                           <>
+                             <strong>{bestReport.fileName.replace('.csv', '')}</strong> has a security score of <span className="font-bold">{bestReport.summary.score}/100</span>.
+                             {bestReport.summary.score > 80 
+                               ? " This vendor demonstrates a strong security posture with minimal risks detected."
+                               : bestReport.summary.score > 60 
+                               ? " Several medium risks were identified that may require remediation."
+                               : " Critical gaps were found. Proceed with caution."}
+                           </>
+                        ) : (
+                           <>
+                             Based on security score and risk profile, <strong>{bestReport.fileName.replace('.csv', '')}</strong> is the strongest candidate. 
+                             They scored <span className="font-bold">{bestReport.summary.score}/100</span> with fewer critical risks than competitors.
+                           </>
+                        )}
                     </p>
                 </div>
             </div>
           </div>
 
-          {/* Comparison Table */}
+          {/* Comparison/Analysis Table */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center space-x-2">
                 <ChartBar size={18} className="text-gray-400" />
-                <h3 className="font-bold text-gray-700">Supplier Comparison Matrix</h3>
+                <h3 className="font-bold text-gray-700">{singleMode ? 'Supplier Analysis' : 'Supplier Comparison Matrix'}</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -92,7 +108,8 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {sortedReports.map((report, idx) => {
-                    const isWinner = idx === 0;
+                    const isWinner = !singleMode && idx === 0;
+                    
                     return (
                         <tr key={report.id} className={`hover:bg-gray-50 transition-colors ${isWinner ? 'bg-green-50/30' : ''}`}>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -125,12 +142,20 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
                                 </div>
                             </td>
                             <td className="px-6 py-4">
-                                {isWinner ? (
-                                    <div className="flex items-center text-green-700 text-sm font-medium">
+                                {singleMode ? (
+                                    <div className={`flex items-center justify-center text-sm font-medium ${report.summary.score > 70 ? 'text-blue-700' : 'text-orange-600'}`}>
+                                        {report.summary.score > 70 ? (
+                                            <><ShieldCheck size={16} className="mr-1.5" /> High Compliance</>
+                                        ) : (
+                                            <><ShieldAlert size={16} className="mr-1.5" /> Review Required</>
+                                        )}
+                                    </div>
+                                ) : isWinner ? (
+                                    <div className="flex items-center justify-center text-green-700 text-sm font-medium">
                                         <CircleCheck size={16} className="mr-1.5" /> Recommended Choice
                                     </div>
                                 ) : (
-                                    <div className="flex items-center text-gray-500 text-sm">
+                                    <div className="flex items-center justify-center text-gray-500 text-sm">
                                         <span className="mr-1.5 text-red-400">-{bestReport.summary.score - report.summary.score} pts</span> vs Top
                                     </div>
                                 )}

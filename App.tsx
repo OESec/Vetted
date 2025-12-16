@@ -21,7 +21,7 @@ import SettingsView from './components/dashboard/SettingsView';
 import CreateReviewSetModal from './components/dashboard/CreateReviewSetModal';
 
 import { AuditReport, AnalysisResult, QuestionnaireRow, ReviewSet, MasterQuestionnaireRow } from './types';
-import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2 } from 'lucide-react';
+import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2, Info } from 'lucide-react';
 import Button from './components/Button';
 import { supabase } from './supabaseClient';
 
@@ -396,6 +396,21 @@ function App() {
   const [view, setView] = useState<'landing' | 'dashboard' | 'auth'>('landing');
   const [dashboardTab, setDashboardTab] = useState<'overview' | 'reports' | 'upload' | 'settings'>('overview');
   
+  // Theme State (Lifted for global platform access)
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [hoveredOverviewMetric, setHoveredOverviewMetric] = useState<string | null>(null);
+
+  // Apply theme class to document
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+
   // State for Data
   const [reviewSets, setReviewSets] = useState<ReviewSet[]>(INITIAL_REVIEW_SETS);
   const [reports, setReports] = useState<AuditReport[]>(DUMMY_REPORTS);
@@ -485,20 +500,21 @@ function App() {
 
     // 2. Check if this was a targeted upload for a specific Review Set
     if (pendingSetUploadId) {
-      // Add report to the specific set
-      const updatedSets = reviewSets.map(set => {
-        if (set.id === pendingSetUploadId) {
-          return { ...set, reports: [report, ...set.reports] };
-        }
-        return set;
+      setReviewSets(prevSets => {
+          const updatedSets = prevSets.map(set => {
+              if (set.id === pendingSetUploadId) {
+                  return { ...set, reports: [report, ...set.reports] };
+              }
+              return set;
+          });
+          
+          // Ensure we update activeReviewSet with the fresh object reference
+          const targetSet = updatedSets.find(s => s.id === pendingSetUploadId);
+          if (targetSet) {
+             setActiveReviewSet(targetSet);
+          }
+          return updatedSets;
       });
-      setReviewSets(updatedSets);
-      
-      // Auto-open the set view again (Seamless Flow)
-      const targetSet = updatedSets.find(s => s.id === pendingSetUploadId);
-      if (targetSet) {
-        setActiveReviewSet(targetSet);
-      }
       
       // Reset flow
       setPendingSetUploadId(null);
@@ -549,7 +565,7 @@ function App() {
         dateCreated: new Date(),
         reports: []
     };
-    setReviewSets([newSet, ...reviewSets]);
+    setReviewSets(prev => [newSet, ...prev]);
     setIsCreateSetModalOpen(false);
     
     // Auto-open the new set
@@ -576,7 +592,12 @@ function App() {
   const renderDashboardContent = () => {
     // 1. Viewing a Single Report (Highest Priority view)
     if (currentReport) {
-        return <ReportViewer report={currentReport} onBack={handleBackToDashboard} />;
+        return <ReportViewer 
+                  report={currentReport} 
+                  onBack={handleBackToDashboard}
+                  isDarkMode={isDarkMode}
+                  onToggleTheme={toggleTheme}
+               />;
     }
 
     // 2. Viewing a Review Set (Comparison View)
@@ -598,19 +619,58 @@ function App() {
         return (
             <div className="space-y-6">
                 <div className="grid md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <p className="text-gray-500 text-sm font-medium">Active Reviews</p>
+                    <div 
+                        className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-visible"
+                        onMouseEnter={() => setHoveredOverviewMetric('active')}
+                        onMouseLeave={() => setHoveredOverviewMetric(null)}
+                    >
+                        <div className="flex items-center justify-between mb-1">
+                             <p className="text-gray-500 text-sm font-medium">Active Reviews</p>
+                             <Info size={14} className="text-gray-400 hover:text-primary cursor-help" />
+                        </div>
                         <p className="text-3xl font-bold text-neutralDark mt-1">{reviewSets.filter(s => s.status === 'Open').length}</p>
+                        {hoveredOverviewMetric === 'active' && (
+                            <div className="absolute z-20 top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 p-3 bg-neutralDark text-white text-xs rounded-lg shadow-xl pointer-events-none animate-fade-in-up">
+                                Total number of ongoing review sets.
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-neutralDark"></div>
+                            </div>
+                        )}
                     </div>
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <p className="text-gray-500 text-sm font-medium">Suppliers Assessed</p>
+                    <div 
+                        className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-visible"
+                        onMouseEnter={() => setHoveredOverviewMetric('suppliers')}
+                        onMouseLeave={() => setHoveredOverviewMetric(null)}
+                    >
+                         <div className="flex items-center justify-between mb-1">
+                             <p className="text-gray-500 text-sm font-medium">Suppliers Assessed</p>
+                             <Info size={14} className="text-gray-400 hover:text-primary cursor-help" />
+                        </div>
                         <p className="text-3xl font-bold text-primary mt-1">{reports.length}</p>
+                         {hoveredOverviewMetric === 'suppliers' && (
+                            <div className="absolute z-20 top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 p-3 bg-neutralDark text-white text-xs rounded-lg shadow-xl pointer-events-none animate-fade-in-up">
+                                Total individual reports uploaded and analyzed.
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-neutralDark"></div>
+                            </div>
+                        )}
                     </div>
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <p className="text-gray-500 text-sm font-medium">Avg Risk Score</p>
+                    <div 
+                        className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-visible"
+                        onMouseEnter={() => setHoveredOverviewMetric('score')}
+                        onMouseLeave={() => setHoveredOverviewMetric(null)}
+                    >
+                         <div className="flex items-center justify-between mb-1">
+                             <p className="text-gray-500 text-sm font-medium">Avg Risk Score</p>
+                             <Info size={14} className="text-gray-400 hover:text-primary cursor-help" />
+                        </div>
                         <p className="text-3xl font-bold text-success mt-1">
                             {reports.length > 0 ? Math.round(reports.reduce((acc, curr) => acc + curr.summary.score, 0) / reports.length) : 0}/100
                         </p>
+                         {hoveredOverviewMetric === 'score' && (
+                            <div className="absolute z-20 top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 p-3 bg-neutralDark text-white text-xs rounded-lg shadow-xl pointer-events-none animate-fade-in-up">
+                                Average security score across all vendors.
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-neutralDark"></div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -654,7 +714,7 @@ function App() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Button 
-                                            variant="outline" 
+                                            variant="secondary" 
                                             size="sm" 
                                             className="w-full md:w-auto"
                                         >
@@ -714,6 +774,8 @@ function App() {
         onTabChange={handleTabChange}
         userEmail={session?.user?.email}
         onLogoClick={() => setView('landing')}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleTheme}
       >
         {renderDashboardContent()}
         <CreateReviewSetModal 

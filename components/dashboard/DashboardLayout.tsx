@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FileText, Settings, LogOut, Plus, ChartPie } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Plus, ChartPie, Moon, Sun } from 'lucide-react';
 import Logo from '../Logo';
 
 interface DashboardLayoutProps {
@@ -9,6 +9,8 @@ interface DashboardLayoutProps {
   onTabChange: (tab: 'overview' | 'reports' | 'upload' | 'settings') => void;
   userEmail?: string;
   onLogoClick?: () => void;
+  isDarkMode?: boolean;
+  onToggleTheme?: () => void;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
@@ -17,10 +19,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   activeTab, 
   onTabChange,
   userEmail,
-  onLogoClick
+  onLogoClick,
+  isDarkMode = false,
+  onToggleTheme
 }) => {
   return (
-    <div className="flex h-screen bg-neutralLight overflow-hidden">
+    <div className="flex h-screen bg-neutralLight dark:bg-gray-900 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-64 bg-neutralDark text-white hidden md:flex flex-col border-r border-gray-800">
         <button 
@@ -88,21 +92,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-neutralDark capitalize">
+        <header className="h-16 bg-white dark:bg-gray-800 dark:border-gray-700 border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-10">
+          <h1 className="text-xl font-bold text-neutralDark dark:text-white capitalize">
             {activeTab === 'overview' && 'Review Sets Overview'}
             {activeTab === 'reports' && 'All Reports'}
             {activeTab === 'upload' && 'New Audit Analysis'}
             {activeTab === 'settings' && 'Platform Settings'}
           </h1>
           <div className="flex items-center space-x-4">
-             <button className="md:hidden p-2 text-neutralDark">
+             {onToggleTheme && (
+                <button 
+                  onClick={onToggleTheme}
+                  className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors focus:outline-none"
+                  aria-label="Toggle Theme"
+                >
+                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+             )}
+             <button className="md:hidden p-2 text-neutralDark dark:text-white">
                 <LayoutDashboard />
              </button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-4 md:p-8">
+        <div className="flex-1 overflow-auto p-4 md:p-8 dark:bg-gray-900">
           {children}
         </div>
       </main>

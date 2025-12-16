@@ -7,13 +7,15 @@ interface DashboardLayoutProps {
   onLogout: () => void;
   activeTab: 'overview' | 'reports' | 'upload' | 'settings';
   onTabChange: (tab: 'overview' | 'reports' | 'upload' | 'settings') => void;
+  userEmail?: string;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
   children, 
   onLogout, 
   activeTab, 
-  onTabChange 
+  onTabChange,
+  userEmail
 }) => {
   return (
     <div className="flex h-screen bg-neutralLight overflow-hidden">
@@ -64,9 +66,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
         <div className="p-4 border-t border-gray-800">
           <div className="flex items-center space-x-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">JD</div>
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              {userEmail ? userEmail.substring(0, 2).toUpperCase() : 'JD'}
+            </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">John Doe</p>
+              <p className="text-sm font-medium truncate">{userEmail || 'John Doe'}</p>
               <p className="text-xs text-gray-400 truncate">Acme Inc.</p>
             </div>
             <button onClick={onLogout} className="text-gray-400 hover:text-white">

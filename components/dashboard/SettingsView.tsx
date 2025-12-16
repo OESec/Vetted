@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { CloudUpload, FileSpreadsheet, Download, CircleCheck, TriangleAlert, Trash2, Save, FlaskConical } from 'lucide-react';
+import { CloudUpload, FileSpreadsheet, Download, CircleCheck, TriangleAlert, Trash2, Save, FlaskConical, Loader2 } from 'lucide-react';
 import Button from '../Button';
 import { MasterQuestionnaireRow } from '../../types';
+import { supabase } from '../../supabaseClient';
 
 interface SettingsViewProps {
   masterQuestionnaire: MasterQuestionnaireRow[];
@@ -20,6 +21,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -123,9 +125,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
         const considerKey = findKey('consider');
         const failKey = findKey('fail');
 
-        // Check for "Answer" generic if specific keys missing, though less ideal for master
-        // This parser is robust enough to find "Pass Answer" even if key is "Pass Answer"
-        
         return {
           question: r[qKey || ''] || "Untitled Question",
           passAnswer: r[passKey || ''] || "",
@@ -145,10 +144,42 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
         throw new Error("Could not identify questions and grading criteria in the CSV. Please check headers (Question, Pass Answer, Consider Answer, Fail Answer).");
       }
 
+      // Update Local State
       onUpdateMaster(validRows);
-      setSuccess(`Successfully imported ${validRows.length} master questions.`);
+      
+      // Save to Database
+      await saveToDatabase(validRows);
+
+      setSuccess(`Successfully imported and saved ${validRows.length} master questions.`);
     } catch (err: any) {
       setError(err.message || "Failed to parse master spreadsheet.");
+    }
+  };
+
+  const saveToDatabase = async (rows: MasterQuestionnaireRow[]) => {
+    setIsSaving(true);
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+           console.warn("No user logged in. Data saved to local memory only.");
+           // Optional: You could trigger supabase.auth.signInAnonymously() here if configured
+           return;
+        }
+
+        const { error } = await supabase
+            .from('organization_settings')
+            .upsert({ 
+                user_id: user.id, 
+                questionnaire_data: rows 
+            }, { onConflict: 'user_id' });
+
+        if (error) throw error;
+    } catch (err: any) {
+        console.error("Database Save Error:", err);
+        setError("Saved to local memory, but failed to sync to cloud: " + err.message);
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -314,11 +345,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                {success}
              </div>
           )}
+
+          {isSaving && (
+             <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
+                 <Loader2 size={16} className="animate-spin mr-2" /> Saving to cloud...
+             </div>
+          )}
         </div>
       </div>
       
       <div className="flex justify-end">
-         <Button onClick={() => alert("Settings saved successfully!")} icon>Save Changes</Button>
+         <Button onClick={() => saveToDatabase(masterQuestionnaire)} icon disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Force Sync to Cloud'}
+         </Button>
       </div>
     </div>
   );

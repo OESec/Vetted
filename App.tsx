@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import TrustBar from './components/TrustBar';
@@ -9,6 +9,7 @@ import Testimonials from './components/Testimonials';
 import Pricing from './components/Pricing';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
+import Auth from './components/Auth';
 
 // Dashboard Components
 import DashboardLayout from './components/dashboard/DashboardLayout';
@@ -22,6 +23,7 @@ import CreateReviewSetModal from './components/dashboard/CreateReviewSetModal';
 import { AuditReport, AnalysisResult, QuestionnaireRow, ReviewSet, MasterQuestionnaireRow } from './types';
 import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2 } from 'lucide-react';
 import Button from './components/Button';
+import { supabase } from './supabaseClient';
 
 // --- Fully Hardcoded Dummy Data ---
 
@@ -391,13 +393,14 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
 ];
 
 function App() {
-  const [view, setView] = useState<'landing' | 'dashboard'>('landing');
+  const [view, setView] = useState<'landing' | 'dashboard' | 'auth'>('landing');
   const [dashboardTab, setDashboardTab] = useState<'overview' | 'reports' | 'upload' | 'settings'>('overview');
   
   // State for Data
   const [reviewSets, setReviewSets] = useState<ReviewSet[]>(INITIAL_REVIEW_SETS);
   const [reports, setReports] = useState<AuditReport[]>(DUMMY_REPORTS);
   const [masterQuestionnaire, setMasterQuestionnaire] = useState<MasterQuestionnaireRow[]>(INITIAL_MASTER_DATA);
+  const [session, setSession] = useState<any>(null);
   
   // State for UI Interaction
   const [activeReviewSet, setActiveReviewSet] = useState<ReviewSet | null>(null);
@@ -405,9 +408,52 @@ function App() {
   const [isCreateSetModalOpen, setIsCreateSetModalOpen] = useState(false);
   const [pendingSetUploadId, setPendingSetUploadId] = useState<string | null>(null);
 
+  // Load from Supabase on mount
+  useEffect(() => {
+    // 1. Check if user is already logged in from a previous session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+          setView('dashboard');
+          fetchUserData(session.user.id);
+      }
+    });
+
+    // 2. Listen for auth changes (Login, Logout, Auto-refresh)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+          setView('dashboard');
+          fetchUserData(session.user.id);
+      } else {
+          // If the user logs out, they are handled by handleLogout, 
+          // but if the session expires, we might want to auto-redirect.
+          // For now, we leave them be or they will see the auth screen if they try to act.
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserData = async (userId: string) => {
+      // Row Level Security protects this, so we just ask for the single row associated with the user
+      const { data, error } = await supabase
+          .from('organization_settings')
+          .select('questionnaire_data')
+          .single();
+      
+      if (data && data.questionnaire_data && Array.isArray(data.questionnaire_data)) {
+          setMasterQuestionnaire(data.questionnaire_data as MasterQuestionnaireRow[]);
+      }
+  };
+
   // Transitions
-  const handleLogin = () => setView('dashboard');
-  const handleLogout = () => {
+  const handleLogin = () => setView('auth');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
     setView('landing');
     setCurrentReport(null);
     setActiveReviewSet(null);
@@ -637,12 +683,17 @@ function App() {
   };
 
   // Main Render
+  if (view === 'auth') {
+      return <Auth onBack={() => setView('landing')} />;
+  }
+
   if (view === 'dashboard') {
     return (
       <DashboardLayout 
         onLogout={handleLogout} 
         activeTab={dashboardTab} 
         onTabChange={handleTabChange}
+        userEmail={session?.user?.email}
       >
         {renderDashboardContent()}
         <CreateReviewSetModal 

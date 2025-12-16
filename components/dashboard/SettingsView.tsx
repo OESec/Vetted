@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CloudUpload, FileSpreadsheet, Download, CircleCheck, TriangleAlert, Trash2, Save, FlaskConical, Loader2, Plus, Edit2, Check, X, Folder } from 'lucide-react';
 import Button from '../Button';
 import { MasterQuestionnaireRow, QuestionnaireSet, OrganizationSettingsData } from '../../types';
@@ -18,6 +18,26 @@ const MASTER_TEMPLATE_CSV = `Question,Pass Answer,Consider Answer,Fail Answer
 "Do you have a documented Incident Response Plan?","Yes, tested annually.","Yes, untested.","No."`;
 
 const MAX_SETS = 5;
+
+// Helper component for auto-resizing textareas
+const AutoResizeTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [props.value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      {...props}
+      style={{ overflow: 'hidden', minHeight: '3rem', ...props.style }}
+    />
+  );
+};
 
 const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpdateMaster }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -461,9 +481,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                                    </td>
                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white align-top">
                                        {isEditing ? (
-                                           <textarea 
-                                             rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-primary outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                           <AutoResizeTextarea
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-primary outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
                                              value={row.question}
                                              onChange={(e) => handleRowChange(i, 'question', e.target.value)}
                                            />
@@ -471,9 +490,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                                    </td>
                                    <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 align-top">
                                        {isEditing ? (
-                                           <textarea 
-                                             rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                           <AutoResizeTextarea
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
                                              value={row.passAnswer}
                                              onChange={(e) => handleRowChange(i, 'passAnswer', e.target.value)}
                                            />
@@ -481,9 +499,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                                    </td>
                                    <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 align-top">
                                        {isEditing ? (
-                                           <textarea 
-                                             rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-orange-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                           <AutoResizeTextarea
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-orange-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
                                              value={row.considerAnswer}
                                              onChange={(e) => handleRowChange(i, 'considerAnswer', e.target.value)}
                                            />
@@ -491,9 +508,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                                    </td>
                                    <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 align-top">
                                        {isEditing ? (
-                                           <textarea 
-                                             rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-red-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                           <AutoResizeTextarea
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-red-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
                                              value={row.failAnswer}
                                              onChange={(e) => handleRowChange(i, 'failAnswer', e.target.value)}
                                            />

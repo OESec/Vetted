@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ReviewSet, AuditReport } from '../../types';
-import { ArrowLeft, Award, TriangleAlert, CircleCheck, ChevronRight, ChartBar, FilePlus, Upload, ShieldCheck, ShieldAlert, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Award, TriangleAlert, CircleCheck, ChevronRight, ChartBar, FilePlus, Upload, ShieldCheck, ShieldAlert, ChevronDown, BookOpen } from 'lucide-react';
 import Button from '../Button';
 
 interface ReviewSetViewerProps {
@@ -16,6 +16,9 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
   const sortedReports = [...reviewSet.reports].sort((a, b) => b.summary.score - a.summary.score);
   const bestReport = sortedReports[0];
   const singleMode = sortedReports.length === 1;
+  
+  // Determine the Master Questionnaire used (assuming consistency across the set)
+  const masterQuestionnaireName = reviewSet.reports.length > 0 ? reviewSet.reports[0].masterQuestionnaireName : null;
 
   const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
 
@@ -29,7 +32,17 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-gray-200 dark:border-gray-700 pb-6">
             <div>
                 <h2 className="text-3xl font-bold text-neutralDark dark:text-white">{reviewSet.name}</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-2xl">{reviewSet.description}</p>
+                <div className="mt-2 flex flex-col gap-2">
+                    <p className="text-gray-500 dark:text-gray-400 max-w-2xl">{reviewSet.description}</p>
+                    {masterQuestionnaireName && (
+                        <div className="flex items-center">
+                            <span className="inline-flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs px-2 py-1 rounded border border-blue-100 dark:border-blue-800">
+                                <BookOpen size={12} className="mr-1.5"/>
+                                Standard: <strong>{masterQuestionnaireName}</strong>
+                            </span>
+                        </div>
+                    )}
+                </div>
             </div>
             <div className="mt-4 md:mt-0 flex items-center gap-3">
                 <div className="relative">
@@ -165,7 +178,15 @@ const ReviewSetViewer: React.FC<ReviewSetViewerProps> = ({ reviewSet, onBack, on
                                     <div className={`w-2 h-10 rounded-l-md mr-3 ${isWinner ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
                                     <div>
                                         <div className="text-sm font-bold text-neutralDark dark:text-white">{report.fileName.replace(/_/g, ' ').replace('.csv', '')}</div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">Submitted: {report.uploadDate.toLocaleDateString()}</div>
+                                        {report.masterQuestionnaireName && (
+                                            <div className="flex items-center mt-1">
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 flex items-center">
+                                                    <BookOpen size={10} className="mr-1"/>
+                                                    {report.masterQuestionnaireName}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Submitted: {report.uploadDate.toLocaleDateString()}</div>
                                     </div>
                                 </div>
                             </td>

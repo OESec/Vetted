@@ -21,7 +21,7 @@ import SettingsView from './components/dashboard/SettingsView';
 import CreateReviewSetModal from './components/dashboard/CreateReviewSetModal';
 
 import { AuditReport, AnalysisResult, QuestionnaireRow, ReviewSet, MasterQuestionnaireRow } from './types';
-import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2, Info } from 'lucide-react';
+import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2, Info, BookOpen } from 'lucide-react';
 import Button from './components/Button';
 import { supabase } from './supabaseClient';
 
@@ -253,40 +253,21 @@ const R4_RESULTS: Record<string, AnalysisResult> = {
     'r4-5': { rowId: 'r4-5', riskLevel: 'High', feedback: 'Availability is not Incident Response. Process for breaches is missing.', evidenceRequired: true, complianceFlag: 'Process Gap' },
 };
 
-// Report 5: Enterprise Legacy (Score ~78) - Enterprise Standard
-const R5_ROWS: QuestionnaireRow[] = [
-    { id: 'r5-1', question: QUESTIONS.q1, answer: 'Yes, ISO 27001 and SOC2.', category: 'Compliance' },
-    { id: 'r5-2', question: QUESTIONS.q2, answer: 'Customer Support Tickets.', category: 'Data Privacy' },
-    { id: 'r5-3', question: QUESTIONS.q3, answer: 'No.', category: 'Data Privacy' },
-    { id: 'r5-4', question: QUESTIONS.q4, answer: 'On-Premise, London Data Center.', category: 'Infrastructure' },
-    { id: 'r5-5', question: QUESTIONS.q5, answer: 'Yes, 3DES encryption.', category: 'Encryption' },
-    { id: 'r5-6', question: QUESTIONS.q6, answer: 'Yes, TLS 1.2.', category: 'Encryption' },
-    { id: 'r5-7', question: QUESTIONS.q7, answer: 'Yes, SMS 2FA.', category: 'Access Control' },
-    { id: 'r5-8', question: QUESTIONS.q8, answer: 'Yes, annually.', category: 'Vulnerability' },
-    { id: 'r5-9', question: QUESTIONS.q9, answer: 'Yes, monthly.', category: 'Vulnerability' },
-    { id: 'r5-10', question: QUESTIONS.q10, answer: 'Yes.', category: 'HR Security' },
-    { id: 'r5-11', question: QUESTIONS.q11, answer: 'Yes, fully documented in Handbook.', category: 'IR' },
-    { id: 'r5-12', question: QUESTIONS.q12, answer: 'Yes, 7 year retention.', category: 'Data Governance' },
-    { id: 'r5-13', question: QUESTIONS.q13, answer: 'CAB meetings weekly.', category: 'SDLC' },
-    { id: 'r5-14', question: QUESTIONS.q14, answer: 'Soft segregation.', category: 'Architecture' },
-    { id: 'r5-15', question: QUESTIONS.q15, answer: 'Yes, tape backups.', category: 'BC/DR' },
+// Report 5: Enterprise Legacy (Score ~78) - NOW RAPID ASSESSMENT VERSION
+// Mapped to the Rapid Questions structure to ensure compatibility in "Marketing Analytics RFP"
+const R5_RAPID_ROWS: QuestionnaireRow[] = [
+    { id: 'r5-1', question: RAPID_QUESTIONS.q1, answer: 'Yes, ISO 27001 and SOC2.', category: 'Compliance' },
+    { id: 'r5-2', question: RAPID_QUESTIONS.q2, answer: 'Customer Support Tickets.', category: 'Data Privacy' },
+    { id: 'r5-3', question: RAPID_QUESTIONS.q5, answer: 'Yes, 3DES encryption.', category: 'Encryption' },
+    { id: 'r5-4', question: RAPID_QUESTIONS.q7, answer: 'Yes, SMS 2FA.', category: 'Access Control' },
+    { id: 'r5-5', question: RAPID_QUESTIONS.q11, answer: 'Yes, fully documented in Handbook.', category: 'IR' },
 ];
-const R5_RESULTS: Record<string, AnalysisResult> = {
+const R5_RAPID_RESULTS: Record<string, AnalysisResult> = {
     'r5-1': { rowId: 'r5-1', riskLevel: 'Pass', feedback: 'Highly certified.', evidenceRequired: false },
     'r5-2': { rowId: 'r5-2', riskLevel: 'Pass', feedback: 'Low risk.', evidenceRequired: false },
-    'r5-3': { rowId: 'r5-3', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r5-4': { rowId: 'r5-4', riskLevel: 'Pass', feedback: 'UK Residency matches preference.', evidenceRequired: false },
-    'r5-5': { rowId: 'r5-5', riskLevel: 'Medium', feedback: '3DES is deprecated/weak. Migrate to AES.', evidenceRequired: false, complianceFlag: 'Legacy Tech' },
-    'r5-6': { rowId: 'r5-6', riskLevel: 'Pass', feedback: 'Acceptable.', evidenceRequired: false },
-    'r5-7': { rowId: 'r5-7', riskLevel: 'Medium', feedback: 'SMS is vulnerable to SIM swapping. Prefer app/hardware tokens.', evidenceRequired: false },
-    'r5-8': { rowId: 'r5-8', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r5-9': { rowId: 'r5-9', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r5-10': { rowId: 'r5-10', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r5-11': { rowId: 'r5-11', riskLevel: 'Pass', feedback: 'Strong governance.', evidenceRequired: true },
-    'r5-12': { rowId: 'r5-12', riskLevel: 'Pass', feedback: 'Documented.', evidenceRequired: false },
-    'r5-13': { rowId: 'r5-13', riskLevel: 'Medium', feedback: 'Heavy process, ensures stability but slows fixes.', evidenceRequired: false },
-    'r5-14': { rowId: 'r5-14', riskLevel: 'Medium', feedback: 'Software logic segregation is weaker than physical.', evidenceRequired: false },
-    'r5-15': { rowId: 'r5-15', riskLevel: 'Medium', feedback: 'Tape is slow to recover. Recommend cloud/disk backup.', evidenceRequired: false },
+    'r5-3': { rowId: 'r5-3', riskLevel: 'Medium', feedback: '3DES is deprecated/weak. Migrate to AES.', evidenceRequired: false, complianceFlag: 'Legacy Tech' },
+    'r5-4': { rowId: 'r5-4', riskLevel: 'Medium', feedback: 'SMS is vulnerable to SIM swapping. Prefer app/hardware tokens.', evidenceRequired: false },
+    'r5-5': { rowId: 'r5-5', riskLevel: 'Pass', feedback: 'Strong governance.', evidenceRequired: true },
 };
 
 // Dummy Reports Array
@@ -331,10 +312,10 @@ const DUMMY_REPORTS: AuditReport[] = [
     id: 'h5',
     fileName: 'Global_Consulting_Group.csv',
     uploadDate: new Date('2023-12-08'),
-    masterQuestionnaireName: 'Enterprise Standard (v1)',
-    rows: R5_ROWS,
-    results: R5_RESULTS,
-    summary: { total: 15, highRisk: 0, mediumRisk: 5, lowRisk: 0, pass: 10, score: 78 }
+    masterQuestionnaireName: 'Rapid Vendor Assessment', // Changed from Enterprise to Rapid for set consistency
+    rows: R5_RAPID_ROWS, // Switched to rapid rows
+    results: R5_RAPID_RESULTS, // Switched to rapid results
+    summary: { total: 5, highRisk: 0, mediumRisk: 2, lowRisk: 0, pass: 3, score: 85 } // Re-scored for Rapid
   }
 ];
 
@@ -346,7 +327,7 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
         description: 'Comparison of shortlisted vendors for the new Customer Relationship Management system.',
         status: 'Open',
         dateCreated: new Date('2023-11-01'),
-        reports: [DUMMY_REPORTS[1], DUMMY_REPORTS[0]] // Compares AWS (Excellent) vs Acme (Average)
+        reports: [DUMMY_REPORTS[1], DUMMY_REPORTS[0]] // Compares AWS (Excellent) vs Acme (Average) - Both Enterprise
     },
     {
         id: 'set-2',
@@ -354,7 +335,7 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
         description: 'Annual review of legacy on-premise suppliers.',
         status: 'Closed',
         dateCreated: new Date('2023-09-10'),
-        reports: [DUMMY_REPORTS[2]] // Just the legacy vendor
+        reports: [DUMMY_REPORTS[2]] // Just the legacy vendor - Rapid
     },
     {
         id: 'set-3',
@@ -362,7 +343,7 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
         description: 'Evaluating new tools for the marketing team. Comparing nimble startup vs established player.',
         status: 'Open',
         dateCreated: new Date('2023-12-01'),
-        reports: [DUMMY_REPORTS[4], DUMMY_REPORTS[3]] // Global Consulting (78) vs HyperGrowth SaaS (80)
+        reports: [DUMMY_REPORTS[4], DUMMY_REPORTS[3]] // Global Consulting (Rapid) vs HyperGrowth SaaS (Rapid)
     }
 ];
 
@@ -701,9 +682,14 @@ function App() {
                                             </span>
                                         </div>
                                         <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{set.description}</p>
-                                        <div className="flex items-center text-xs text-gray-400 dark:text-gray-500 gap-4">
+                                        <div className="flex flex-wrap items-center text-xs text-gray-400 dark:text-gray-500 gap-4">
                                             <span className="flex items-center"><Calendar size={12} className="mr-1"/> Created {set.dateCreated.toLocaleDateString()}</span>
                                             <span className="flex items-center"><Users size={12} className="mr-1"/> {set.reports.length} Suppliers</span>
+                                            {set.reports.length > 0 && set.reports[0].masterQuestionnaireName && (
+                                                <span className="flex items-center bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                                                    <BookOpen size={10} className="mr-1"/> {set.reports[0].masterQuestionnaireName}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">

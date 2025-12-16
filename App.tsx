@@ -27,7 +27,7 @@ import { supabase } from './supabaseClient';
 
 // --- Fully Hardcoded Dummy Data ---
 
-// Standardized Questions for all vendors (The Master List - Expanded)
+// 1. Enterprise Standard Questions (15 Qs)
 const QUESTIONS = {
     q1: "Do you hold a valid ISO 27001 certification or SOC 2 Type II report?",
     q2: "What information will the organisation be processing?",
@@ -44,6 +44,15 @@ const QUESTIONS = {
     q13: "Is there a formal Change Management process?",
     q14: "Do you segregate customer data (Multi-tenancy controls)?",
     q15: "Do you have a Business Continuity / Disaster Recovery plan?"
+};
+
+// 2. Rapid Assessment Questions (5 Qs)
+const RAPID_QUESTIONS = {
+    q1: QUESTIONS.q1,
+    q2: QUESTIONS.q2,
+    q5: QUESTIONS.q5,
+    q7: QUESTIONS.q7,
+    q11: QUESTIONS.q11
 };
 
 // Initial Master Data matching the questions above
@@ -140,7 +149,7 @@ const INITIAL_MASTER_DATA: MasterQuestionnaireRow[] = [
     }
 ];
 
-// Report 1: Average Vendor (Score ~65)
+// Report 1: Average Vendor (Score ~65) - Enterprise Standard
 const R1_ROWS: QuestionnaireRow[] = [
     { id: 'r1-1', question: QUESTIONS.q1, answer: 'We are currently in the readiness phase for SOC2.', category: 'Compliance' },
     { id: 'r1-2', question: QUESTIONS.q2, answer: 'We process customer names and email addresses.', category: 'Data Privacy' },
@@ -176,7 +185,7 @@ const R1_RESULTS: Record<string, AnalysisResult> = {
     'r1-15': { rowId: 'r1-15', riskLevel: 'Medium', feedback: 'Backups are not a DR plan. Need RTO/RPO definitions.', evidenceRequired: true },
 };
 
-// Report 2: Excellent Vendor (Score 100)
+// Report 2: Excellent Vendor (Score 100) - Enterprise Standard
 const R2_ROWS: QuestionnaireRow[] = [
     { id: 'r2-1', question: QUESTIONS.q1, answer: 'Yes, ISO 27001 certified and SOC2 Type II report attached.', category: 'Compliance' },
     { id: 'r2-2', question: QUESTIONS.q2, answer: 'Confidential business data.', category: 'Data Privacy' },
@@ -212,79 +221,39 @@ const R2_RESULTS: Record<string, AnalysisResult> = {
     'r2-15': { rowId: 'r2-15', riskLevel: 'Pass', feedback: 'High availability.', evidenceRequired: false },
 };
 
-// Report 3: High Risk Vendor (Score ~25)
+// Report 3: High Risk Vendor (Score 0) - Rapid Assessment (5 Qs)
 const R3_ROWS: QuestionnaireRow[] = [
-    { id: 'r3-1', question: QUESTIONS.q1, answer: 'What is SOC2?', category: 'Compliance' },
-    { id: 'r3-2', question: QUESTIONS.q2, answer: 'Financial records and HR data.', category: 'Data Privacy' },
-    { id: 'r3-3', question: QUESTIONS.q3, answer: 'Yes, full employee records.', category: 'Data Privacy' },
-    { id: 'r3-4', question: QUESTIONS.q4, answer: 'Servers in our headquarters (Beijing).', category: 'Infrastructure' },
-    { id: 'r3-5', question: QUESTIONS.q5, answer: 'No, data is on internal network only.', category: 'Encryption' },
-    { id: 'r3-6', question: QUESTIONS.q6, answer: 'HTTP for internal tools.', category: 'Encryption' },
-    { id: 'r3-7', question: QUESTIONS.q7, answer: 'No, we use complex passwords.', category: 'Access Control' },
-    { id: 'r3-8', question: QUESTIONS.q8, answer: 'No.', category: 'Vulnerability' },
-    { id: 'r3-9', question: QUESTIONS.q9, answer: 'No.', category: 'Vulnerability' },
-    { id: 'r3-10', question: QUESTIONS.q10, answer: 'No.', category: 'HR Security' },
-    { id: 'r3-11', question: QUESTIONS.q11, answer: 'We call IT support.', category: 'IR' },
-    { id: 'r3-12', question: QUESTIONS.q12, answer: 'We keep everything.', category: 'Data Governance' },
-    { id: 'r3-13', question: QUESTIONS.q13, answer: 'Ad-hoc updates.', category: 'SDLC' },
-    { id: 'r3-14', question: QUESTIONS.q14, answer: 'Shared database tables.', category: 'Architecture' },
-    { id: 'r3-15', question: QUESTIONS.q15, answer: 'No.', category: 'BC/DR' },
+    { id: 'r3-1', question: RAPID_QUESTIONS.q1, answer: 'What is SOC2?', category: 'Compliance' },
+    { id: 'r3-2', question: RAPID_QUESTIONS.q2, answer: 'Financial records and HR data.', category: 'Data Privacy' },
+    { id: 'r3-3', question: RAPID_QUESTIONS.q5, answer: 'No, data is on internal network only.', category: 'Encryption' },
+    { id: 'r3-4', question: RAPID_QUESTIONS.q7, answer: 'No, we use complex passwords.', category: 'Access Control' },
+    { id: 'r3-5', question: RAPID_QUESTIONS.q11, answer: 'We call IT support.', category: 'IR' },
 ];
 const R3_RESULTS: Record<string, AnalysisResult> = {
     'r3-1': { rowId: 'r3-1', riskLevel: 'High', feedback: 'Lack of awareness of basic standards.', evidenceRequired: false, complianceFlag: 'Education Required' },
     'r3-2': { rowId: 'r3-2', riskLevel: 'High', feedback: 'Sensitive data processed without adequate controls.', evidenceRequired: false },
-    'r3-3': { rowId: 'r3-3', riskLevel: 'High', feedback: 'Special category data requires strict controls (Encryption, Access).', evidenceRequired: true },
-    'r3-4': { rowId: 'r3-4', riskLevel: 'High', feedback: 'Hosting in China presents significant data sovereignty risks.', evidenceRequired: false, complianceFlag: 'Geopolitical Risk' },
-    'r3-5': { rowId: 'r3-5', riskLevel: 'High', feedback: 'Data must be encrypted regardless of network location.', evidenceRequired: true, complianceFlag: 'Critical Gap' },
-    'r3-6': { rowId: 'r3-6', riskLevel: 'High', feedback: 'Cleartext protocols are unacceptable.', evidenceRequired: false },
-    'r3-7': { rowId: 'r3-7', riskLevel: 'High', feedback: 'Passwords are insufficient. MFA is mandatory.', evidenceRequired: false, complianceFlag: 'Weak Auth' },
-    'r3-8': { rowId: 'r3-8', riskLevel: 'High', feedback: 'No pen test program.', evidenceRequired: false },
-    'r3-9': { rowId: 'r3-9', riskLevel: 'High', feedback: 'No vulnerability management.', evidenceRequired: false },
-    'r3-10': { rowId: 'r3-10', riskLevel: 'High', feedback: 'Insider threat risk.', evidenceRequired: false },
-    'r3-11': { rowId: 'r3-11', riskLevel: 'High', feedback: 'No formal process defined.', evidenceRequired: true },
-    'r3-12': { rowId: 'r3-12', riskLevel: 'High', feedback: 'Infinite retention violates GDPR/privacy laws.', evidenceRequired: false },
-    'r3-13': { rowId: 'r3-13', riskLevel: 'Medium', feedback: 'Risk of instability and unauthorized changes.', evidenceRequired: true },
-    'r3-14': { rowId: 'r3-14', riskLevel: 'Medium', feedback: 'Weak segregation.', evidenceRequired: false },
-    'r3-15': { rowId: 'r3-15', riskLevel: 'High', feedback: 'No continuity plan.', evidenceRequired: true },
+    'r3-3': { rowId: 'r3-3', riskLevel: 'High', feedback: 'Data must be encrypted regardless of network location.', evidenceRequired: true, complianceFlag: 'Critical Gap' },
+    'r3-4': { rowId: 'r3-4', riskLevel: 'High', feedback: 'Passwords are insufficient. MFA is mandatory.', evidenceRequired: false, complianceFlag: 'Weak Auth' },
+    'r3-5': { rowId: 'r3-5', riskLevel: 'High', feedback: 'No formal process defined.', evidenceRequired: true },
 };
 
-// Report 4: Modern Startup (Good Tech, Weak Process) (Score ~72)
+// Report 4: Modern Startup (Score 80) - Rapid Assessment (5 Qs)
 const R4_ROWS: QuestionnaireRow[] = [
-    { id: 'r4-1', question: QUESTIONS.q1, answer: 'We are too small for SOC2.', category: 'Compliance' },
-    { id: 'r4-2', question: QUESTIONS.q2, answer: 'Application logs and user profiles.', category: 'Data Privacy' },
-    { id: 'r4-3', question: QUESTIONS.q3, answer: 'No.', category: 'Data Privacy' },
-    { id: 'r4-4', question: QUESTIONS.q4, answer: 'AWS US-West.', category: 'Infrastructure' },
-    { id: 'r4-5', question: QUESTIONS.q5, answer: 'Yes, ChaCha20-Poly1305 everywhere.', category: 'Encryption' },
-    { id: 'r4-6', question: QUESTIONS.q6, answer: 'Yes, TLS 1.3.', category: 'Encryption' },
-    { id: 'r4-7', question: QUESTIONS.q7, answer: 'Yes, Okta for everything.', category: 'Access Control' },
-    { id: 'r4-8', question: QUESTIONS.q8, answer: 'We use automated tools.', category: 'Vulnerability' },
-    { id: 'r4-9', question: QUESTIONS.q9, answer: 'Automated CI/CD security scans.', category: 'Vulnerability' },
-    { id: 'r4-10', question: QUESTIONS.q10, answer: 'Yes.', category: 'HR Security' },
-    { id: 'r4-11', question: QUESTIONS.q11, answer: 'We rely on AWS availability zones.', category: 'IR' },
-    { id: 'r4-12', question: QUESTIONS.q12, answer: 'No formal policy.', category: 'Data Governance' },
-    { id: 'r4-13', question: QUESTIONS.q13, answer: 'GitOps - code is reviewed.', category: 'SDLC' },
-    { id: 'r4-14', question: QUESTIONS.q14, answer: 'Separate databases per tenant.', category: 'Architecture' },
-    { id: 'r4-15', question: QUESTIONS.q15, answer: 'AWS RDS Automated Backups.', category: 'BC/DR' },
+    { id: 'r4-1', question: RAPID_QUESTIONS.q1, answer: 'We are too small for SOC2.', category: 'Compliance' },
+    { id: 'r4-2', question: RAPID_QUESTIONS.q2, answer: 'Application logs and user profiles.', category: 'Data Privacy' },
+    { id: 'r4-3', question: RAPID_QUESTIONS.q5, answer: 'Yes, ChaCha20-Poly1305 everywhere.', category: 'Encryption' },
+    { id: 'r4-4', question: RAPID_QUESTIONS.q7, answer: 'Yes, Okta for everything.', category: 'Access Control' },
+    { id: 'r4-5', question: RAPID_QUESTIONS.q11, answer: 'We rely on AWS availability zones.', category: 'IR' },
 ];
 const R4_RESULTS: Record<string, AnalysisResult> = {
     'r4-1': { rowId: 'r4-1', riskLevel: 'Medium', feedback: 'Size is not an excuse. Suggest ISO 27001 Essentials or Cyber Essentials Plus.', evidenceRequired: true },
     'r4-2': { rowId: 'r4-2', riskLevel: 'Pass', feedback: 'Low risk data.', evidenceRequired: false },
-    'r4-3': { rowId: 'r4-3', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r4-4': { rowId: 'r4-4', riskLevel: 'Medium', feedback: 'US Residency requires transfer risk assessment.', evidenceRequired: true },
-    'r4-5': { rowId: 'r4-5', riskLevel: 'Pass', feedback: 'Modern, performant encryption standards.', evidenceRequired: false },
-    'r4-6': { rowId: 'r4-6', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r4-7': { rowId: 'r4-7', riskLevel: 'Pass', feedback: 'Strong centralized identity management.', evidenceRequired: false },
-    'r4-8': { rowId: 'r4-8', riskLevel: 'Medium', feedback: 'Automated tools are not a penetration test. Human testing required.', evidenceRequired: true },
-    'r4-9': { rowId: 'r4-9', riskLevel: 'Pass', feedback: 'Strong devsecops.', evidenceRequired: false },
-    'r4-10': { rowId: 'r4-10', riskLevel: 'Pass', feedback: 'Compliant.', evidenceRequired: false },
-    'r4-11': { rowId: 'r4-11', riskLevel: 'High', feedback: 'Availability is not Incident Response. Process for breaches is missing.', evidenceRequired: true, complianceFlag: 'Process Gap' },
-    'r4-12': { rowId: 'r4-12', riskLevel: 'Medium', feedback: 'Need retention policy.', evidenceRequired: true },
-    'r4-13': { rowId: 'r4-13', riskLevel: 'Pass', feedback: 'GitOps provides good audit trail.', evidenceRequired: false },
-    'r4-14': { rowId: 'r4-14', riskLevel: 'Pass', feedback: 'Excellent segregation.', evidenceRequired: false },
-    'r4-15': { rowId: 'r4-15', riskLevel: 'Medium', feedback: 'Backups exist but need documented RTO/RPO.', evidenceRequired: true },
+    'r4-3': { rowId: 'r4-3', riskLevel: 'Pass', feedback: 'Modern, performant encryption standards.', evidenceRequired: false },
+    'r4-4': { rowId: 'r4-4', riskLevel: 'Pass', feedback: 'Strong centralized identity management.', evidenceRequired: false },
+    'r4-5': { rowId: 'r4-5', riskLevel: 'High', feedback: 'Availability is not Incident Response. Process for breaches is missing.', evidenceRequired: true, complianceFlag: 'Process Gap' },
 };
 
-// Report 5: Enterprise Legacy (Strong Process, Old Tech) (Score ~78)
+// Report 5: Enterprise Legacy (Score ~78) - Enterprise Standard
 const R5_ROWS: QuestionnaireRow[] = [
     { id: 'r5-1', question: QUESTIONS.q1, answer: 'Yes, ISO 27001 and SOC2.', category: 'Compliance' },
     { id: 'r5-2', question: QUESTIONS.q2, answer: 'Customer Support Tickets.', category: 'Data Privacy' },
@@ -326,6 +295,7 @@ const DUMMY_REPORTS: AuditReport[] = [
     id: 'h1',
     fileName: 'Acme_Security_Assessment.csv',
     uploadDate: new Date('2023-10-24'),
+    masterQuestionnaireName: 'Enterprise Standard (v1)',
     rows: R1_ROWS, 
     results: R1_RESULTS,
     summary: { total: 15, highRisk: 1, mediumRisk: 5, lowRisk: 1, pass: 8, score: 65 }
@@ -334,6 +304,7 @@ const DUMMY_REPORTS: AuditReport[] = [
     id: 'h2',
     fileName: 'AWS_Cloud_Audit.csv',
     uploadDate: new Date('2023-11-10'),
+    masterQuestionnaireName: 'Enterprise Standard (v1)',
     rows: R2_ROWS,
     results: R2_RESULTS,
     summary: { total: 15, highRisk: 0, mediumRisk: 0, lowRisk: 0, pass: 15, score: 100 }
@@ -342,22 +313,25 @@ const DUMMY_REPORTS: AuditReport[] = [
     id: 'h3',
     fileName: 'Legacy_Vendor_V2.csv',
     uploadDate: new Date('2023-09-15'),
+    masterQuestionnaireName: 'Rapid Vendor Assessment',
     rows: R3_ROWS,
     results: R3_RESULTS,
-    summary: { total: 15, highRisk: 11, mediumRisk: 2, lowRisk: 0, pass: 2, score: 25 }
+    summary: { total: 5, highRisk: 5, mediumRisk: 0, lowRisk: 0, pass: 0, score: 0 }
   },
   {
     id: 'h4',
     fileName: 'HyperGrowth_SaaS_Inc.csv',
     uploadDate: new Date('2023-12-05'),
+    masterQuestionnaireName: 'Rapid Vendor Assessment',
     rows: R4_ROWS,
     results: R4_RESULTS,
-    summary: { total: 15, highRisk: 1, mediumRisk: 4, lowRisk: 0, pass: 10, score: 72 }
+    summary: { total: 5, highRisk: 1, mediumRisk: 1, lowRisk: 0, pass: 3, score: 80 }
   },
   {
     id: 'h5',
     fileName: 'Global_Consulting_Group.csv',
     uploadDate: new Date('2023-12-08'),
+    masterQuestionnaireName: 'Enterprise Standard (v1)',
     rows: R5_ROWS,
     results: R5_RESULTS,
     summary: { total: 15, highRisk: 0, mediumRisk: 5, lowRisk: 0, pass: 10, score: 78 }
@@ -388,7 +362,7 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
         description: 'Evaluating new tools for the marketing team. Comparing nimble startup vs established player.',
         status: 'Open',
         dateCreated: new Date('2023-12-01'),
-        reports: [DUMMY_REPORTS[4], DUMMY_REPORTS[3]] // Global Consulting (78) vs HyperGrowth SaaS (72)
+        reports: [DUMMY_REPORTS[4], DUMMY_REPORTS[3]] // Global Consulting (78) vs HyperGrowth SaaS (80)
     }
 ];
 
@@ -494,6 +468,16 @@ function App() {
     setDashboardTab('overview');
   };
 
+  const handleUpdateReviewSetStatus = (id: string, newStatus: 'Open' | 'Closed' | 'Archived') => {
+    // Update the list
+    setReviewSets(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
+
+    // Update the active view if it's the one being modified
+    if (activeReviewSet && activeReviewSet.id === id) {
+        setActiveReviewSet(prev => prev ? { ...prev, status: newStatus } : null);
+    }
+  };
+
   const handleAnalysisComplete = (report: AuditReport) => {
     // 1. Add to global reports
     setReports(prev => [report, ...prev]);
@@ -583,6 +567,15 @@ function App() {
 
   const handleArchiveSet = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    const set = reviewSets.find(s => s.id === id);
+    if (!set) return;
+
+    if (set.status !== 'Closed') {
+        alert("Active review sets cannot be archived. Please close the review set first.");
+        return;
+    }
+
     if (window.confirm("Are you sure you want to archive this review set?")) {
         setReviewSets(prev => prev.map(s => s.id === id ? { ...s, status: 'Archived' } : s));
     }
@@ -608,6 +601,7 @@ function App() {
                 onBack={handleBackToDashboard} 
                 onViewReport={handleOpenReport}
                 onAddReport={handleRequestUploadForSet}
+                onUpdateStatus={handleUpdateReviewSetStatus}
             />
         );
     }
@@ -620,15 +614,15 @@ function App() {
             <div className="space-y-6">
                 <div className="grid md:grid-cols-3 gap-6">
                     <div 
-                        className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-visible"
+                        className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-visible"
                         onMouseEnter={() => setHoveredOverviewMetric('active')}
                         onMouseLeave={() => setHoveredOverviewMetric(null)}
                     >
                         <div className="flex items-center justify-between mb-1">
-                             <p className="text-gray-500 text-sm font-medium">Active Reviews</p>
+                             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Active Reviews</p>
                              <Info size={14} className="text-gray-400 hover:text-primary cursor-help" />
                         </div>
-                        <p className="text-3xl font-bold text-neutralDark mt-1">{reviewSets.filter(s => s.status === 'Open').length}</p>
+                        <p className="text-3xl font-bold text-neutralDark dark:text-white mt-1">{reviewSets.filter(s => s.status === 'Open').length}</p>
                         {hoveredOverviewMetric === 'active' && (
                             <div className="absolute z-20 top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 p-3 bg-neutralDark text-white text-xs rounded-lg shadow-xl pointer-events-none animate-fade-in-up">
                                 Total number of ongoing review sets.
@@ -637,12 +631,12 @@ function App() {
                         )}
                     </div>
                     <div 
-                        className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-visible"
+                        className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-visible"
                         onMouseEnter={() => setHoveredOverviewMetric('suppliers')}
                         onMouseLeave={() => setHoveredOverviewMetric(null)}
                     >
                          <div className="flex items-center justify-between mb-1">
-                             <p className="text-gray-500 text-sm font-medium">Suppliers Assessed</p>
+                             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Suppliers Assessed</p>
                              <Info size={14} className="text-gray-400 hover:text-primary cursor-help" />
                         </div>
                         <p className="text-3xl font-bold text-primary mt-1">{reports.length}</p>
@@ -654,12 +648,12 @@ function App() {
                         )}
                     </div>
                     <div 
-                        className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-visible"
+                        className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-visible"
                         onMouseEnter={() => setHoveredOverviewMetric('score')}
                         onMouseLeave={() => setHoveredOverviewMetric(null)}
                     >
                          <div className="flex items-center justify-between mb-1">
-                             <p className="text-gray-500 text-sm font-medium">Avg Risk Score</p>
+                             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Avg Risk Score</p>
                              <Info size={14} className="text-gray-400 hover:text-primary cursor-help" />
                         </div>
                         <p className="text-3xl font-bold text-success mt-1">
@@ -674,9 +668,9 @@ function App() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 className="font-bold text-lg text-neutralDark">Recent Review Sets</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h3 className="font-bold text-lg text-neutralDark dark:text-white">Recent Review Sets</h3>
                         <Button 
                             variant="primary" 
                             size="sm" 
@@ -685,10 +679,10 @@ function App() {
                             <Plus size={16} className="mr-2" /> Create New Set
                         </Button>
                     </div>
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
                         {activeSets.length === 0 ? (
-                            <div className="p-12 text-center text-gray-500">
-                                <FolderOpen size={48} className="mx-auto text-gray-300 mb-4" />
+                            <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+                                <FolderOpen size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
                                 <p>No active review sets. Create one to get started.</p>
                             </div>
                         ) : (
@@ -696,18 +690,18 @@ function App() {
                                 <div 
                                     key={set.id} 
                                     onClick={() => handleOpenReviewSet(set)}
-                                    className="p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group relative"
+                                    className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group relative"
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-1">
                                             <FolderOpen className="text-primary group-hover:scale-110 transition-transform" size={20} />
-                                            <h4 className="text-lg font-bold text-neutralDark group-hover:text-primary transition-colors">{set.name}</h4>
-                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${set.status === 'Open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                            <h4 className="text-lg font-bold text-neutralDark dark:text-white group-hover:text-primary transition-colors">{set.name}</h4>
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${set.status === 'Open' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
                                                 {set.status}
                                             </span>
                                         </div>
-                                        <p className="text-gray-500 text-sm mb-2">{set.description}</p>
-                                        <div className="flex items-center text-xs text-gray-400 gap-4">
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{set.description}</p>
+                                        <div className="flex items-center text-xs text-gray-400 dark:text-gray-500 gap-4">
                                             <span className="flex items-center"><Calendar size={12} className="mr-1"/> Created {set.dateCreated.toLocaleDateString()}</span>
                                             <span className="flex items-center"><Users size={12} className="mr-1"/> {set.reports.length} Suppliers</span>
                                         </div>
@@ -716,13 +710,13 @@ function App() {
                                         <Button 
                                             variant="secondary" 
                                             size="sm" 
-                                            className="w-full md:w-auto"
+                                            className="w-full md:w-auto dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                         >
                                             View Comparison <ArrowRight size={16} className="ml-2" />
                                         </Button>
                                         <button 
                                             onClick={(e) => handleArchiveSet(set.id, e)}
-                                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-300 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                                             title="Archive Set"
                                         >
                                             <Archive size={18} />

@@ -129,6 +129,8 @@ const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete }) =
         id: generateId(),
         fileName: file.name,
         uploadDate: new Date(),
+        // For new uploads, we assume they are based on the default standard for now
+        masterQuestionnaireName: 'Enterprise Standard (v1)', 
         rows,
         results,
         summary: { total, highRisk: high, mediumRisk: medium, lowRisk: low, pass, score }

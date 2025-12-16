@@ -52,6 +52,7 @@ export interface AuditReport {
   id: string;
   fileName: string;
   uploadDate: Date;
+  masterQuestionnaireName: string; // The standard this report was tested against
   rows: QuestionnaireRow[];
   results: Record<string, AnalysisResult>; // Keyed by rowId
   summary: {

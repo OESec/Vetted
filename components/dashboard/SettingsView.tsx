@@ -343,12 +343,12 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-neutralDark">Platform Settings</h2>
-           <p className="text-gray-500">Configure your automated review criteria and knowledge base.</p>
+           <h2 className="text-2xl font-bold text-neutralDark dark:text-white">Platform Settings</h2>
+           <p className="text-gray-500 dark:text-gray-400">Configure your automated review criteria and knowledge base.</p>
         </div>
         
         {/* Set Selector */}
-        <div className="flex items-center space-x-2 bg-white p-1 rounded-lg border border-gray-200">
+        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
             {sets.map(s => (
                 <button
                     key={s.id}
@@ -356,7 +356,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center ${
                         activeSetId === s.id 
                         ? 'bg-primary text-white shadow-sm' 
-                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                     }`}
                 >
                    <Folder size={14} className="mr-2" />
@@ -366,7 +366,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
             {sets.length < MAX_SETS && (
                 <button 
                     onClick={handleAddSet}
-                    className="px-2 py-1.5 text-gray-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
+                    className="px-2 py-1.5 text-gray-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition-colors"
                     title="Add another Master Questionnaire"
                 >
                     <Plus size={18} />
@@ -375,23 +375,23 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             {isEditing ? (
                  <input 
                     type="text" 
                     value={activeSet?.name}
                     onChange={(e) => handleRenameSet(e.target.value)}
-                    className="font-bold text-neutralDark text-lg bg-white border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-primary outline-none"
+                    className="font-bold text-neutralDark text-lg bg-white dark:bg-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:ring-2 focus:ring-primary outline-none"
                  />
             ) : (
-                <h3 className="font-bold text-neutralDark flex items-center gap-2 text-lg">
+                <h3 className="font-bold text-neutralDark dark:text-white flex items-center gap-2 text-lg">
                   <FileSpreadsheet size={20} className="text-primary"/> 
                   {activeSet?.name}
                 </h3>
             )}
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {activeSet?.rows.length || 0} Criteria Defined • Last updated {new Date().toLocaleDateString()}
             </p>
           </div>
@@ -399,7 +399,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
           <div className="flex items-center gap-3">
              {isEditing ? (
                  <>
-                    <Button variant="ghost" size="sm" onClick={handleCancelEdit} className="text-gray-500">
+                    <Button variant="ghost" size="sm" onClick={handleCancelEdit} className="text-gray-500 dark:text-gray-400">
                         <X size={16} className="mr-1" /> Cancel
                     </Button>
                     <Button variant="primary" size="sm" onClick={handleSaveEdit}>
@@ -408,10 +408,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                  </>
              ) : (
                  <>
-                     <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
+                     <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)} className="dark:bg-gray-700 dark:text-white dark:border-gray-600">
                         <Edit2 size={16} className="mr-2" /> Edit Manually
                      </Button>
-                     <Button variant="outline" size="sm" onClick={handleDownloadTemplate}>
+                     <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                         <Download size={16} className="mr-2" /> Template
                      </Button>
                  </>
@@ -422,7 +422,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
         <div className="p-8">
           {activeSet && activeSet.rows.length > 0 ? (
             <div className="space-y-6">
-               <div className="flex items-center justify-between bg-green-50 text-green-800 px-4 py-3 rounded-lg border border-green-100">
+               <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400 px-4 py-3 rounded-lg border border-green-100 dark:border-green-900/50">
                   <div className="flex items-center gap-2">
                       <CircleCheck size={18} />
                       <span className="font-medium">Active Questionnaire Loaded</span>
@@ -435,65 +435,65 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                             saveSetsToDatabase(empty, activeSetId);
                             onUpdateMaster([]);
                         }} 
-                        className="text-sm hover:underline text-green-700 flex items-center gap-1"
+                        className="text-sm hover:underline text-green-700 dark:text-green-400 flex items-center gap-1"
                       >
                           <Trash2 size={14} /> Clear All
                       </button>
                   )}
                </div>
                
-               <div className="border rounded-lg overflow-hidden">
-                   <table className="min-w-full divide-y divide-gray-200">
-                       <thead className="bg-gray-50">
+               <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                       <thead className="bg-gray-50 dark:bg-gray-900">
                            <tr>
-                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase w-12">#</th>
-                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase w-1/3">Question</th>
-                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase text-green-600">Pass Criteria</th>
-                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase text-orange-500">Consider</th>
-                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase text-red-600">Fail Criteria</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase w-12">#</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase w-1/3">Question</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase text-green-600 dark:text-green-400">Pass Criteria</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase text-orange-500 dark:text-orange-400">Consider</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase text-red-600 dark:text-red-400">Fail Criteria</th>
                            </tr>
                        </thead>
-                       <tbody className="bg-white divide-y divide-gray-200">
+                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                            {(isEditing || isExpanded ? activeSet.rows : activeSet.rows.slice(0, 5)).map((row, i) => (
-                               <tr key={i}>
-                                   <td className="px-4 py-2 text-sm text-gray-500 font-medium align-top">
+                               <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                   <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 font-medium align-top">
                                        {i + 1}
                                    </td>
-                                   <td className="px-4 py-2 text-sm text-gray-900 align-top">
+                                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-white align-top">
                                        {isEditing ? (
                                            <textarea 
                                              rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-primary outline-none"
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-primary outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                              value={row.question}
                                              onChange={(e) => handleRowChange(i, 'question', e.target.value)}
                                            />
                                        ) : row.question}
                                    </td>
-                                   <td className="px-4 py-2 text-sm text-gray-600 align-top">
+                                   <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 align-top">
                                        {isEditing ? (
                                            <textarea 
                                              rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                              value={row.passAnswer}
                                              onChange={(e) => handleRowChange(i, 'passAnswer', e.target.value)}
                                            />
                                        ) : row.passAnswer}
                                    </td>
-                                   <td className="px-4 py-2 text-sm text-gray-600 align-top">
+                                   <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 align-top">
                                        {isEditing ? (
                                            <textarea 
                                              rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-orange-500 outline-none"
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-orange-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                              value={row.considerAnswer}
                                              onChange={(e) => handleRowChange(i, 'considerAnswer', e.target.value)}
                                            />
                                        ) : row.considerAnswer}
                                    </td>
-                                   <td className="px-4 py-2 text-sm text-gray-600 align-top">
+                                   <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 align-top">
                                        {isEditing ? (
                                            <textarea 
                                              rows={2}
-                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-red-500 outline-none"
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-red-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                              value={row.failAnswer}
                                              onChange={(e) => handleRowChange(i, 'failAnswer', e.target.value)}
                                            />
@@ -504,9 +504,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                            {!isEditing && activeSet.rows.length > 5 && !isExpanded && (
                                <tr 
                                   onClick={() => setIsExpanded(true)}
-                                  className="cursor-pointer hover:bg-gray-50 transition-colors group"
+                                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
                                >
-                                   <td colSpan={5} className="px-4 py-3 text-center text-xs text-gray-500 font-medium group-hover:text-primary">
+                                   <td colSpan={5} className="px-4 py-3 text-center text-xs text-gray-500 dark:text-gray-400 font-medium group-hover:text-primary">
                                        ...and {activeSet.rows.length - 5} more rows (Click to expand)
                                    </td>
                                </tr>
@@ -514,9 +514,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                            {!isEditing && activeSet.rows.length > 5 && isExpanded && (
                                <tr 
                                   onClick={() => setIsExpanded(false)}
-                                  className="cursor-pointer hover:bg-gray-50 transition-colors group"
+                                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
                                >
-                                   <td colSpan={5} className="px-4 py-3 text-center text-xs text-gray-400 group-hover:text-gray-600">
+                                   <td colSpan={5} className="px-4 py-3 text-center text-xs text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300">
                                        Show less
                                    </td>
                                </tr>
@@ -527,9 +527,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                
                {!isEditing && (
                    <div className="text-center">
-                       <p className="text-sm text-gray-500 mb-2">Need to replace entirely?</p>
+                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Need to replace entirely?</p>
                        <label className="cursor-pointer inline-block">
-                            <span className="bg-white border border-gray-300 text-neutralDark px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm inline-flex items-center">
+                            <span className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-neutralDark dark:text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm inline-flex items-center">
                                 <CloudUpload size={14} className="mr-2"/> Upload New CSV
                             </span>
                             <input type="file" className="hidden" accept=".csv" onChange={handleFileInput} />
@@ -544,40 +544,40 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${isDragging ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary/50'}`}
+                className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${isDragging ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-600 hover:border-primary/50 dark:hover:border-primary/50'}`}
               >
-                <CloudUpload size={48} className="text-gray-300 mx-auto mb-4" />
-                <p className="text-lg font-medium text-neutralDark">Drag & drop Master CSV here</p>
-                <p className="text-sm text-gray-400 mb-6">
+                <CloudUpload size={48} className="text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-lg font-medium text-neutralDark dark:text-white">Drag & drop Master CSV here</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mb-6">
                   For "{activeSet?.name}"
                 </p>
                 
                 <div className="flex flex-col items-center space-y-3">
                   <label className="cursor-pointer">
-                    <span className="bg-white border border-gray-300 text-neutralDark px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-sm inline-block">
+                    <span className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-neutralDark dark:text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm inline-block">
                     Browse Files
                     </span>
                     <input type="file" className="hidden" accept=".csv" onChange={handleFileInput} />
                   </label>
                   
                   <div className="relative flex items-center w-full max-w-xs py-2">
-                     <div className="flex-grow border-t border-gray-200"></div>
-                     <span className="flex-shrink-0 mx-4 text-gray-300 text-xs">OR</span>
-                     <div className="flex-grow border-t border-gray-200"></div>
+                     <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+                     <span className="flex-shrink-0 mx-4 text-gray-300 dark:text-gray-600 text-xs">OR</span>
+                     <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
                   </div>
 
                   <Button 
                      variant="secondary" 
                      size="sm"
                      onClick={handleDownloadTemplate}
-                     className="text-xs text-gray-600"
+                     className="text-xs text-gray-600 dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600"
                    >
                      <Download size={14} className="mr-2" /> Download CSV Template
                    </Button>
                 </div>
                 
                 {error && (
-                  <div className="mt-6 bg-red-50 border border-red-100 text-red-600 p-3 rounded-lg flex items-center justify-center">
+                  <div className="mt-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 p-3 rounded-lg flex items-center justify-center">
                     <TriangleAlert size={16} className="mr-2" />
                     {error}
                   </div>
@@ -593,14 +593,14 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
           )}
           
           {success && (
-             <div className="mt-4 bg-green-50 border border-green-100 text-green-600 p-3 rounded-lg flex items-center justify-center animate-fade-in-up">
+             <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/50 text-green-600 dark:text-green-400 p-3 rounded-lg flex items-center justify-center animate-fade-in-up">
                <CircleCheck size={16} className="mr-2" />
                {success}
              </div>
           )}
 
           {isSaving && (
-             <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
+             <div className="mt-4 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                  <Loader2 size={16} className="animate-spin mr-2" /> Saving to cloud...
              </div>
           )}

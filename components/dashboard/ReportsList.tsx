@@ -10,7 +10,8 @@ import {
   Calendar, 
   TriangleAlert, 
   CircleCheck, 
-  FolderOpen 
+  FolderOpen,
+  BookOpen
 } from 'lucide-react';
 import Button from '../Button';
 
@@ -95,7 +96,7 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
 
   // Render Sort Icon
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown size={14} className="text-gray-300 ml-1" />;
+    if (sortField !== field) return <ArrowUpDown size={14} className="text-gray-300 dark:text-gray-600 ml-1" />;
     return sortDirection === 'asc' 
       ? <ChevronUp size={14} className="text-primary ml-1" />
       : <ChevronDown size={14} className="text-primary ml-1" />;
@@ -105,8 +106,8 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-neutralDark">All Reports</h2>
-          <p className="text-gray-500 mt-1">Searchable archive of all individual vendor assessments.</p>
+          <h2 className="text-2xl font-bold text-neutralDark dark:text-white">All Supplier Reports</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Searchable archive of all individual vendor assessments.</p>
         </div>
         
         {/* Filters Toolbar */}
@@ -118,7 +119,7 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
               placeholder="Search reports..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-full sm:w-64"
+              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-full sm:w-64"
             />
           </div>
           
@@ -127,7 +128,7 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
              <select
                value={selectedSetFilter}
                onChange={(e) => setSelectedSetFilter(e.target.value)}
-               className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none bg-white w-full sm:w-auto cursor-pointer"
+               className="pl-10 pr-8 py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none bg-white w-full sm:w-auto cursor-pointer"
              >
                <option value="all">All Review Sets</option>
                {reviewSets.map(set => (
@@ -138,14 +139,14 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th 
                   onClick={() => handleSort('fileName')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors select-none group"
                 >
                   <div className="flex items-center">
                     Report Name
@@ -154,7 +155,7 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                 </th>
                 <th 
                   onClick={() => handleSort('reviewSet')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors select-none group"
                 >
                   <div className="flex items-center">
                     Review Set / Context
@@ -163,7 +164,7 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                 </th>
                 <th 
                   onClick={() => handleSort('uploadDate')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors select-none group"
                 >
                   <div className="flex items-center">
                     Date
@@ -172,25 +173,25 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                 </th>
                 <th 
                   onClick={() => handleSort('score')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors select-none group"
                 >
                   <div className="flex items-center">
                     Score
                     <SortIcon field="score" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Risks
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {processedReports.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     No reports match your filters.
                   </td>
                 </tr>
@@ -202,22 +203,27 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                     <tr 
                       key={report.id} 
                       onClick={() => onViewReport(report)}
-                      className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                      className="hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                          <div className="flex-shrink-0 h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <FileText size={20} />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-neutralDark group-hover:text-primary transition-colors">{report.fileName}</div>
-                            <div className="text-xs text-gray-500">ID: {report.id}</div>
+                            <div className="text-sm font-medium text-neutralDark dark:text-white group-hover:text-primary transition-colors">{report.fileName}</div>
+                            <div className="flex items-center gap-1 mt-1">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 flex items-center">
+                                    <BookOpen size={10} className="mr-1"/>
+                                    {report.masterQuestionnaireName || "Standard Protocol"}
+                                </span>
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                          {reviewSet ? (
-                           <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                           <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">
                              <FolderOpen size={12} className="mr-1.5" />
                              {reviewSet.name.length > 25 ? reviewSet.name.substring(0, 25) + '...' : reviewSet.name}
                            </span>
@@ -226,27 +232,27 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                          )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <Calendar size={14} className="mr-1.5" />
                           {report.uploadDate.toLocaleDateString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          report.summary.score > 80 ? 'bg-green-100 text-green-800' : 
-                          report.summary.score > 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                          report.summary.score > 80 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 
+                          report.summary.score > 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                         }`}>
                           {report.summary.score}/100
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex space-x-3">
                           {report.summary.highRisk > 0 && (
-                            <span className="text-red-600 flex items-center font-medium" title="High Risk">
+                            <span className="text-red-600 dark:text-red-400 flex items-center font-medium" title="High Risk">
                               <TriangleAlert size={14} className="mr-1" /> {report.summary.highRisk}
                             </span>
                           )}
-                          <span className="text-success flex items-center" title="Pass">
+                          <span className="text-success dark:text-green-400 flex items-center" title="Pass">
                             <CircleCheck size={14} className="mr-1" /> {report.summary.pass}
                           </span>
                         </div>
@@ -256,7 +262,7 @@ const ReportsList: React.FC<ReportsListProps> = ({ reports, reviewSets, onViewRe
                           variant="ghost" 
                           size="sm" 
                           // The row click handles navigation, but we keep the button visual
-                          className="text-gray-400 hover:text-primary"
+                          className="text-gray-400 hover:text-primary dark:text-gray-400 dark:hover:text-primary"
                         >
                           Details
                         </Button>

@@ -444,8 +444,20 @@ function App() {
           .select('questionnaire_data')
           .single();
       
-      if (data && data.questionnaire_data && Array.isArray(data.questionnaire_data)) {
-          setMasterQuestionnaire(data.questionnaire_data as MasterQuestionnaireRow[]);
+      if (data && data.questionnaire_data) {
+          const qData = data.questionnaire_data;
+          // Handle Legacy Array
+          if (Array.isArray(qData)) {
+              setMasterQuestionnaire(qData as MasterQuestionnaireRow[]);
+          } 
+          // Handle New Object Format (Multi-Set)
+          else if (qData.sets && Array.isArray(qData.sets)) {
+             // Find the active set to use as the Master Questionnaire for analysis
+             const activeSet = qData.sets.find((s: any) => s.id === qData.activeSetId) || qData.sets[0];
+             if (activeSet && activeSet.rows) {
+                 setMasterQuestionnaire(activeSet.rows);
+             }
+          }
       }
   };
 

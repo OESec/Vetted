@@ -79,3 +79,15 @@ export interface MasterQuestionnaireRow {
   considerAnswer: string;
   failAnswer: string;
 }
+
+export interface QuestionnaireSet {
+  id: string;
+  name: string;
+  lastUpdated: Date;
+  rows: MasterQuestionnaireRow[];
+}
+
+export interface OrganizationSettingsData {
+  activeSetId: string;
+  sets: QuestionnaireSet[];
+}

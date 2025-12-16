@@ -126,6 +126,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack }) => {
           <table className="min-w-full divide-y divide-gray-200 print:divide-gray-300">
             <thead className="bg-gray-50 print:bg-gray-100">
               <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[28%]">Question</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">Supplier Answer</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">AI Assessment</th>
@@ -135,18 +136,21 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack }) => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200 print:divide-gray-300">
               {report.rows.length === 0 ? (
-                 <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500 italic">No detailed row data available for this report.</td></tr>
+                 <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500 italic">No detailed row data available for this report.</td></tr>
               ) : (
-                report.rows.map((row) => {
+                report.rows.map((row, index) => {
                   const result = report.results[row.id];
                   if (!result) return (
                     <tr key={row.id}>
-                        <td className="px-6 py-4 text-sm text-red-500" colSpan={5}>Missing analysis for row {row.id}</td>
+                        <td className="px-6 py-4 text-sm text-red-500" colSpan={6}>Missing analysis for row {row.id}</td>
                     </tr>
                   );
 
                   return (
                     <tr key={row.id} className="break-inside-avoid border-b border-gray-100 print:border-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-500 font-mono align-top">
+                        {index + 1}
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-900 font-medium align-top">
                         {row.question}
                         <div className="text-xs text-gray-400 mt-1">{row.category}</div>

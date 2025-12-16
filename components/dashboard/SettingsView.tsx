@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { CloudUpload, FileSpreadsheet, Download, CircleCheck, TriangleAlert, Trash2, Save, FlaskConical, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CloudUpload, FileSpreadsheet, Download, CircleCheck, TriangleAlert, Trash2, Save, FlaskConical, Loader2, Plus, Edit2, Check, X, Folder } from 'lucide-react';
 import Button from '../Button';
-import { MasterQuestionnaireRow } from '../../types';
+import { MasterQuestionnaireRow, QuestionnaireSet, OrganizationSettingsData } from '../../types';
 import { supabase } from '../../supabaseClient';
 
 interface SettingsViewProps {
@@ -17,12 +17,69 @@ const MASTER_TEMPLATE_CSV = `Question,Pass Answer,Consider Answer,Fail Answer
 "Do you conduct background checks on all employees?","Yes, all employees.","Key roles only.","No."
 "Do you have a documented Incident Response Plan?","Yes, tested annually.","Yes, untested.","No."`;
 
+const MAX_SETS = 5;
+
 const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpdateMaster }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Multi-set state
+  const [sets, setSets] = useState<QuestionnaireSet[]>([]);
+  const [activeSetId, setActiveSetId] = useState<string>('default');
+
+  // Load sets on mount
+  useEffect(() => {
+    fetchSets();
+  }, []);
+
+  const fetchSets = async () => {
+     const { data: { user } } = await supabase.auth.getUser();
+     if (!user) {
+         // Fallback for demo/no-auth mode: wrap current masterQuestionnaire as default
+         setSets([{ id: 'default', name: 'Master Questionnaire (Default)', lastUpdated: new Date(), rows: masterQuestionnaire }]);
+         return;
+     }
+
+     const { data, error } = await supabase
+          .from('organization_settings')
+          .select('questionnaire_data')
+          .eq('user_id', user.id)
+          .single();
+
+     if (data && data.questionnaire_data) {
+         const qData = data.questionnaire_data;
+         if (Array.isArray(qData)) {
+             // Migrate legacy array to sets structure
+             const defaultSet: QuestionnaireSet = {
+                 id: 'default',
+                 name: 'Master Questionnaire (Default)',
+                 lastUpdated: new Date(),
+                 rows: qData as MasterQuestionnaireRow[]
+             };
+             setSets([defaultSet]);
+             setActiveSetId('default');
+         } else if (qData.sets && Array.isArray(qData.sets)) {
+             // Load new structure
+             setSets(qData.sets);
+             setActiveSetId(qData.activeSetId || qData.sets[0]?.id || 'default');
+         }
+     } else {
+         // Initialize if empty
+         const defaultSet: QuestionnaireSet = {
+             id: 'default',
+             name: 'Master Questionnaire (Default)',
+             lastUpdated: new Date(),
+             rows: masterQuestionnaire
+         };
+         setSets([defaultSet]);
+     }
+  };
+
+  const activeSet = sets.find(s => s.id === activeSetId) || sets[0];
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -145,40 +202,53 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
         throw new Error("Could not identify questions and grading criteria in the CSV. Please check headers (Question, Pass Answer, Consider Answer, Fail Answer).");
       }
 
-      // Update Local State
+      // Update the active set
+      const updatedSets = sets.map(s => {
+          if (s.id === activeSetId) {
+              return { ...s, rows: validRows, lastUpdated: new Date() };
+          }
+          return s;
+      });
+      setSets(updatedSets);
+      
+      // Update Parent App State immediately
       onUpdateMaster(validRows);
       
-      // Save to Database
-      await saveToDatabase(validRows);
+      // Persist to Cloud
+      await saveSetsToDatabase(updatedSets, activeSetId);
 
-      setSuccess(`Successfully imported and saved ${validRows.length} master questions.`);
+      setSuccess(`Successfully imported and saved ${validRows.length} questions to "${activeSet?.name}".`);
     } catch (err: any) {
       setError(err.message || "Failed to parse master spreadsheet.");
     }
   };
 
-  const saveToDatabase = async (rows: MasterQuestionnaireRow[]) => {
+  const saveSetsToDatabase = async (currentSets: QuestionnaireSet[], currentActiveId: string) => {
     setIsSaving(true);
     try {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
            console.warn("No user logged in. Data saved to local memory only.");
-           // Optional: You could trigger supabase.auth.signInAnonymously() here if configured
            return;
         }
+
+        const payload: OrganizationSettingsData = {
+            activeSetId: currentActiveId,
+            sets: currentSets
+        };
 
         const { error } = await supabase
             .from('organization_settings')
             .upsert({ 
                 user_id: user.id, 
-                questionnaire_data: rows 
+                questionnaire_data: payload 
             }, { onConflict: 'user_id' });
 
         if (error) throw error;
     } catch (err: any) {
         console.error("Database Save Error:", err);
-        setError("Saved to local memory, but failed to sync to cloud: " + err.message);
+        setError("Saved locally, but failed to sync to cloud: " + err.message);
     } finally {
         setIsSaving(false);
     }
@@ -201,79 +271,252 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
     const file = new File([blob], "sample_master_criteria.csv", { type: 'text/csv' });
     processFile(file);
   };
+  
+  // -- New Functionality --
+
+  const handleAddSet = () => {
+      if (sets.length >= MAX_SETS) return;
+      const newId = `set-${Date.now()}`;
+      const newSet: QuestionnaireSet = {
+          id: newId,
+          name: `Master Questionnaire ${sets.length + 1}`,
+          lastUpdated: new Date(),
+          rows: [] // Empty start
+      };
+      const updatedSets = [...sets, newSet];
+      setSets(updatedSets);
+      setActiveSetId(newId);
+      // Don't auto-save just yet, let them add data? 
+      // Actually syncing state is safer.
+      saveSetsToDatabase(updatedSets, newId);
+      onUpdateMaster([]); // New set is empty
+  };
+
+  const handleSwitchSet = (id: string) => {
+      setActiveSetId(id);
+      const targetSet = sets.find(s => s.id === id);
+      if (targetSet) {
+          onUpdateMaster(targetSet.rows);
+          // Persist the active selection
+          saveSetsToDatabase(sets, id);
+      }
+      setError(null);
+      setSuccess(null);
+      setIsEditing(false);
+  };
+
+  const handleRowChange = (index: number, field: keyof MasterQuestionnaireRow, value: string) => {
+      if (!activeSet) return;
+      const newRows = [...activeSet.rows];
+      newRows[index] = { ...newRows[index], [field]: value };
+      
+      const updatedSets = sets.map(s => s.id === activeSetId ? { ...s, rows: newRows } : s);
+      setSets(updatedSets);
+  };
+
+  const handleSaveEdit = async () => {
+      if (!activeSet) return;
+      setIsEditing(false);
+      onUpdateMaster(activeSet.rows);
+      await saveSetsToDatabase(sets, activeSetId);
+      setSuccess("Changes saved successfully.");
+  };
+  
+  const handleCancelEdit = () => {
+      // Revert to what is in DB/Memory before edit? 
+      // For simplicity, we assume sets state is the source of truth. 
+      // If user wants to cancel, we might need a backup. 
+      // Since this is a simple app, we'll just toggle off. 
+      // Ideally we would revert, but let's just commit what we have or reload.
+      setIsEditing(false);
+      // Re-fetch to revert changes?
+      fetchSets();
+  };
+
+  const handleRenameSet = (name: string) => {
+      const updatedSets = sets.map(s => s.id === activeSetId ? { ...s, name } : s);
+      setSets(updatedSets);
+      saveSetsToDatabase(updatedSets, activeSetId);
+  };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-neutralDark">Platform Settings</h2>
-        <p className="text-gray-500">Configure your automated review criteria and knowledge base.</p>
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in-up">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+           <h2 className="text-2xl font-bold text-neutralDark">Platform Settings</h2>
+           <p className="text-gray-500">Configure your automated review criteria and knowledge base.</p>
+        </div>
+        
+        {/* Set Selector */}
+        <div className="flex items-center space-x-2 bg-white p-1 rounded-lg border border-gray-200">
+            {sets.map(s => (
+                <button
+                    key={s.id}
+                    onClick={() => handleSwitchSet(s.id)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center ${
+                        activeSetId === s.id 
+                        ? 'bg-primary text-white shadow-sm' 
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                >
+                   <Folder size={14} className="mr-2" />
+                   {s.name.length > 15 ? s.name.substring(0, 15) + '...' : s.name}
+                </button>
+            ))}
+            {sets.length < MAX_SETS && (
+                <button 
+                    onClick={handleAddSet}
+                    className="px-2 py-1.5 text-gray-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
+                    title="Add another Master Questionnaire"
+                >
+                    <Plus size={18} />
+                </button>
+            )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+        <div className="p-6 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
-            <h3 className="font-bold text-neutralDark flex items-center gap-2">
-              <FileSpreadsheet size={20} className="text-primary"/> 
-              Master Questionnaire
-            </h3>
+            {isEditing ? (
+                 <input 
+                    type="text" 
+                    value={activeSet?.name}
+                    onChange={(e) => handleRenameSet(e.target.value)}
+                    className="font-bold text-neutralDark text-lg bg-white border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-primary outline-none"
+                 />
+            ) : (
+                <h3 className="font-bold text-neutralDark flex items-center gap-2 text-lg">
+                  <FileSpreadsheet size={20} className="text-primary"/> 
+                  {activeSet?.name}
+                </h3>
+            )}
             <p className="text-sm text-gray-500 mt-1">
-              Upload your standard questionnaire with defined Pass/Fail/Consider criteria. 
-              The AI will use this as the "Gold Standard" for grading.
+              {activeSet?.rows.length || 0} Criteria Defined • Last updated {new Date().toLocaleDateString()}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={handleDownloadTemplate}>
-            <Download size={16} className="mr-2" /> Template
-          </Button>
+          
+          <div className="flex items-center gap-3">
+             {isEditing ? (
+                 <>
+                    <Button variant="ghost" size="sm" onClick={handleCancelEdit} className="text-gray-500">
+                        <X size={16} className="mr-1" /> Cancel
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={handleSaveEdit}>
+                        <Check size={16} className="mr-1" /> Save Changes
+                    </Button>
+                 </>
+             ) : (
+                 <>
+                     <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
+                        <Edit2 size={16} className="mr-2" /> Edit Manually
+                     </Button>
+                     <Button variant="outline" size="sm" onClick={handleDownloadTemplate}>
+                        <Download size={16} className="mr-2" /> Template
+                     </Button>
+                 </>
+             )}
+          </div>
         </div>
 
         <div className="p-8">
-          {masterQuestionnaire.length > 0 ? (
+          {activeSet && activeSet.rows.length > 0 ? (
             <div className="space-y-6">
                <div className="flex items-center justify-between bg-green-50 text-green-800 px-4 py-3 rounded-lg border border-green-100">
                   <div className="flex items-center gap-2">
                       <CircleCheck size={18} />
-                      <span className="font-medium">Active Master Questionnaire: {masterQuestionnaire.length} Questions Loaded</span>
+                      <span className="font-medium">Active Questionnaire Loaded</span>
                   </div>
-                  <button onClick={() => onUpdateMaster([])} className="text-sm hover:underline text-green-700 flex items-center gap-1">
-                      <Trash2 size={14} /> Clear
-                  </button>
+                  {!isEditing && (
+                      <button 
+                        onClick={() => {
+                            const empty = sets.map(s => s.id === activeSetId ? { ...s, rows: [] } : s);
+                            setSets(empty);
+                            saveSetsToDatabase(empty, activeSetId);
+                            onUpdateMaster([]);
+                        }} 
+                        className="text-sm hover:underline text-green-700 flex items-center gap-1"
+                      >
+                          <Trash2 size={14} /> Clear All
+                      </button>
+                  )}
                </div>
                
                <div className="border rounded-lg overflow-hidden">
                    <table className="min-w-full divide-y divide-gray-200">
                        <thead className="bg-gray-50">
                            <tr>
-                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Question</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase w-12">#</th>
+                               <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase w-1/3">Question</th>
                                <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase text-green-600">Pass Criteria</th>
                                <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase text-orange-500">Consider</th>
                                <th className="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase text-red-600">Fail Criteria</th>
                            </tr>
                        </thead>
                        <tbody className="bg-white divide-y divide-gray-200">
-                           {(isExpanded ? masterQuestionnaire : masterQuestionnaire.slice(0, 5)).map((row, i) => (
+                           {(isEditing || isExpanded ? activeSet.rows : activeSet.rows.slice(0, 5)).map((row, i) => (
                                <tr key={i}>
-                                   <td className="px-4 py-2 text-sm text-gray-900">{row.question}</td>
-                                   <td className="px-4 py-2 text-sm text-gray-600">{row.passAnswer}</td>
-                                   <td className="px-4 py-2 text-sm text-gray-600">{row.considerAnswer}</td>
-                                   <td className="px-4 py-2 text-sm text-gray-600">{row.failAnswer}</td>
+                                   <td className="px-4 py-2 text-sm text-gray-500 font-medium align-top">
+                                       {i + 1}
+                                   </td>
+                                   <td className="px-4 py-2 text-sm text-gray-900 align-top">
+                                       {isEditing ? (
+                                           <textarea 
+                                             rows={2}
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-primary outline-none"
+                                             value={row.question}
+                                             onChange={(e) => handleRowChange(i, 'question', e.target.value)}
+                                           />
+                                       ) : row.question}
+                                   </td>
+                                   <td className="px-4 py-2 text-sm text-gray-600 align-top">
+                                       {isEditing ? (
+                                           <textarea 
+                                             rows={2}
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                             value={row.passAnswer}
+                                             onChange={(e) => handleRowChange(i, 'passAnswer', e.target.value)}
+                                           />
+                                       ) : row.passAnswer}
+                                   </td>
+                                   <td className="px-4 py-2 text-sm text-gray-600 align-top">
+                                       {isEditing ? (
+                                           <textarea 
+                                             rows={2}
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-orange-500 outline-none"
+                                             value={row.considerAnswer}
+                                             onChange={(e) => handleRowChange(i, 'considerAnswer', e.target.value)}
+                                           />
+                                       ) : row.considerAnswer}
+                                   </td>
+                                   <td className="px-4 py-2 text-sm text-gray-600 align-top">
+                                       {isEditing ? (
+                                           <textarea 
+                                             rows={2}
+                                             className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-red-500 outline-none"
+                                             value={row.failAnswer}
+                                             onChange={(e) => handleRowChange(i, 'failAnswer', e.target.value)}
+                                           />
+                                       ) : row.failAnswer}
+                                   </td>
                                </tr>
                            ))}
-                           {masterQuestionnaire.length > 5 && !isExpanded && (
+                           {!isEditing && activeSet.rows.length > 5 && !isExpanded && (
                                <tr 
                                   onClick={() => setIsExpanded(true)}
                                   className="cursor-pointer hover:bg-gray-50 transition-colors group"
                                >
-                                   <td colSpan={4} className="px-4 py-3 text-center text-xs text-gray-500 font-medium group-hover:text-primary">
-                                       ...and {masterQuestionnaire.length - 5} more rows (Click to expand)
+                                   <td colSpan={5} className="px-4 py-3 text-center text-xs text-gray-500 font-medium group-hover:text-primary">
+                                       ...and {activeSet.rows.length - 5} more rows (Click to expand)
                                    </td>
                                </tr>
                            )}
-                           {masterQuestionnaire.length > 5 && isExpanded && (
+                           {!isEditing && activeSet.rows.length > 5 && isExpanded && (
                                <tr 
                                   onClick={() => setIsExpanded(false)}
                                   className="cursor-pointer hover:bg-gray-50 transition-colors group"
                                >
-                                   <td colSpan={4} className="px-4 py-3 text-center text-xs text-gray-400 group-hover:text-gray-600">
+                                   <td colSpan={5} className="px-4 py-3 text-center text-xs text-gray-400 group-hover:text-gray-600">
                                        Show less
                                    </td>
                                </tr>
@@ -282,10 +525,17 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                    </table>
                </div>
                
-               <div className="text-center">
-                   <p className="text-sm text-gray-500 mb-2">Need to update?</p>
-                   <Button variant="secondary" size="sm" onClick={() => onUpdateMaster([])}>Upload New Version</Button>
-               </div>
+               {!isEditing && (
+                   <div className="text-center">
+                       <p className="text-sm text-gray-500 mb-2">Need to replace entirely?</p>
+                       <label className="cursor-pointer inline-block">
+                            <span className="bg-white border border-gray-300 text-neutralDark px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm inline-flex items-center">
+                                <CloudUpload size={14} className="mr-2"/> Upload New CSV
+                            </span>
+                            <input type="file" className="hidden" accept=".csv" onChange={handleFileInput} />
+                        </label>
+                   </div>
+               )}
             </div>
           ) : (
             <div className="space-y-6">
@@ -299,7 +549,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                 <CloudUpload size={48} className="text-gray-300 mx-auto mb-4" />
                 <p className="text-lg font-medium text-neutralDark">Drag & drop Master CSV here</p>
                 <p className="text-sm text-gray-400 mb-6">
-                  Must include columns for <strong>Question</strong>, <strong>Pass Answer</strong>, <strong>Consider Answer</strong>, and <strong>Fail Answer</strong>.
+                  For "{activeSet?.name}"
                 </p>
                 
                 <div className="flex flex-col items-center space-y-3">
@@ -339,17 +589,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
                     <FlaskConical size={14} className="mr-1"/> Load Sample Master Data for Testing
                  </button>
               </div>
-
-              <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg">
-                <h4 className="font-bold text-sm text-blue-900 mb-1">Demo Instructions:</h4>
-                <p className="text-sm text-blue-800">
-                  Your Master CSV defines the "Gold Standard" answers. It must contain headers:
-                  <br/>
-                  <code>Question, Pass Answer, Consider Answer, Fail Answer</code>
-                  <br/>
-                  The AI uses these examples to grade incoming vendor questionnaires.
-                </p>
-              </div>
             </div>
           )}
           
@@ -366,12 +605,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
              </div>
           )}
         </div>
-      </div>
-      
-      <div className="flex justify-end">
-         <Button onClick={() => saveToDatabase(masterQuestionnaire)} icon disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Force Sync to Cloud'}
-         </Button>
       </div>
     </div>
   );

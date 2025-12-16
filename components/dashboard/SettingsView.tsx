@@ -361,36 +361,40 @@ const SettingsView: React.FC<SettingsViewProps> = ({ masterQuestionnaire, onUpda
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in-up">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col gap-6">
         <div>
            <h2 className="text-2xl font-bold text-neutralDark dark:text-white">Platform Settings</h2>
            <p className="text-gray-500 dark:text-gray-400">Configure your automated review criteria and knowledge base.</p>
         </div>
         
-        {/* Set Selector */}
-        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+        {/* Set Selector - Renovated Design */}
+        <div className="flex flex-wrap items-center gap-3">
             {sets.map(s => (
                 <button
                     key={s.id}
                     onClick={() => handleSwitchSet(s.id)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center ${
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center border ${
                         activeSetId === s.id 
-                        ? 'bg-primary text-white shadow-sm' 
-                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-primary border-primary text-white shadow-md transform scale-105' 
+                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary/50 hover:text-primary dark:hover:text-primary'
                     }`}
                 >
-                   <Folder size={14} className="mr-2" />
-                   {s.name.length > 15 ? s.name.substring(0, 15) + '...' : s.name}
+                   <Folder size={16} className="mr-2" />
+                   {s.name}
                 </button>
             ))}
-            {sets.length < MAX_SETS && (
+            
+            {sets.length < MAX_SETS ? (
                 <button 
                     onClick={handleAddSet}
-                    className="px-2 py-1.5 text-gray-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    title="Add another Master Questionnaire"
+                    className="px-4 py-2 text-sm font-medium rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 text-gray-400 hover:border-primary hover:text-primary hover:bg-blue-50 dark:hover:bg-gray-800/50 transition-all flex items-center"
+                    title="Add new questionnaire standard"
                 >
-                    <Plus size={18} />
+                    <Plus size={16} className="mr-2" />
+                    New Standard
                 </button>
+            ) : (
+                <span className="text-xs text-gray-400 italic ml-2 border border-transparent px-2 py-1">Limit Reached</span>
             )}
         </div>
       </div>

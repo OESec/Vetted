@@ -51,7 +51,7 @@ const Features: React.FC = () => {
           {features.map((feature, idx) => (
             <div key={idx} className="p-8 rounded-2xl border border-gray-100 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
               <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/5 transition-colors">
-                {React.cloneElement(feature.icon as React.ReactElement, { size: 24 })}
+                {React.cloneElement(feature.icon as React.ReactElement<any>, { size: 24 })}
               </div>
               <h3 className="text-xl font-bold text-neutralDark mb-3 group-hover:text-primary transition-colors">
                 {feature.title}

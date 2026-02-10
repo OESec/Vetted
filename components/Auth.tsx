@@ -6,9 +6,10 @@ import { AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface AuthProps {
   onBack: () => void;
+  onLoginSuccess?: (session: any) => void;
 }
 
-const Auth: React.FC<AuthProps> = ({ onBack }) => {
+const Auth: React.FC<AuthProps> = ({ onBack, onLoginSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +22,22 @@ const Auth: React.FC<AuthProps> = ({ onBack }) => {
     setLoading(true);
     setError(null);
     setMessage(null);
+
+    // Hardcoded Backdoor for Testing
+    if (email === 'investor_demo@vetted.ai' && password === 'Blue-Sky-Action-99!') {
+        setTimeout(() => {
+            if (onLoginSuccess) {
+                onLoginSuccess({
+                    user: {
+                        id: 'mock-investor-id',
+                        email: email
+                    }
+                });
+            }
+            setLoading(false);
+        }, 800);
+        return;
+    }
 
     try {
       if (isSignUp) {

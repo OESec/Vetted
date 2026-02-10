@@ -409,6 +409,7 @@ function App() {
 
   const fetchUserData = async (userId: string) => {
       // Row Level Security protects this, so we just ask for the single row associated with the user
+      // Note: If ID is a mock ID, Supabase will just return null/error, which is fine (we use defaults)
       const { data, error } = await supabase
           .from('organization_settings')
           .select('questionnaire_data')
@@ -743,7 +744,13 @@ function App() {
 
   // Main Render
   if (view === 'auth') {
-      return <Auth onBack={() => setView('landing')} />;
+      return <Auth 
+        onBack={() => setView('landing')} 
+        onLoginSuccess={(mockSession) => {
+            setSession(mockSession);
+            setView('dashboard');
+        }}
+      />;
   }
 
   if (view === 'dashboard') {

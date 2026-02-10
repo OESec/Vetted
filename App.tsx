@@ -19,6 +19,7 @@ import ReviewSetViewer from './components/dashboard/ReviewSetViewer';
 import ReportsList from './components/dashboard/ReportsList';
 import SettingsView from './components/dashboard/SettingsView';
 import CreateReviewSetModal from './components/dashboard/CreateReviewSetModal';
+import GlobalChat from './components/dashboard/GlobalChat';
 
 import { AuditReport, AnalysisResult, QuestionnaireRow, ReviewSet, MasterQuestionnaireRow } from './types';
 import { TriangleAlert, CircleCheck, FileText, Calendar, FolderOpen, Users, ArrowRight, Plus, Archive, Trash2, Info, BookOpen } from 'lucide-react';
@@ -770,6 +771,7 @@ function App() {
             onClose={() => setIsCreateSetModalOpen(false)} 
             onCreate={handleCreateReviewSet} 
         />
+        <GlobalChat reports={reports} reviewSets={reviewSets} />
       </DashboardLayout>
     );
   }

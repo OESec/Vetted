@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { QuestionnaireRow, AnalysisResult } from '../types';
+import { QuestionnaireRow, AnalysisResult, AuditReport, ReviewSet } from '../types';
 
 // Few-shot training examples to simulate "Historical Data"
 const TRAINING_EXAMPLES = `
@@ -51,9 +51,13 @@ Rules for Analysis:
 Output must be strict JSON matching the schema.
 `;
 
+// Initialize AI client (Assuming API_KEY is available in environment or handled via proxy in production)
+// Note: For this frontend-only demo, we rely on the process.envshim or hardcoded key if needed, 
+// but sticking to the request of using process.env.API_KEY as per instructions.
+const getClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+
 export const analyzeQuestionnaire = async (rows: QuestionnaireRow[]): Promise<Record<string, AnalysisResult>> => {
-  // Initialize AI client here to avoid top-level environment access issues
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getClient();
 
   // We limit the batch size to ensure the model pays attention to every row.
   // For a real app, this would loop or queue. Here we take the first 50.
@@ -133,4 +137,69 @@ export const analyzeQuestionnaire = async (rows: QuestionnaireRow[]): Promise<Re
     });
     return fallback;
   }
+};
+
+export const sendGlobalChatMessage = async (
+  query: string,
+  history: { role: string; parts: { text: string }[] }[],
+  contextData: { reports: AuditReport[]; reviewSets: ReviewSet[] }
+): Promise<string> => {
+    const ai = getClient();
+
+    // Simplify Context Data to reduce token usage while keeping essential info
+    const simplifiedContext = {
+        availableReports: contextData.reports.map(r => ({
+            id: r.id,
+            vendor: r.fileName,
+            score: r.summary.score,
+            criticalRisks: r.summary.highRisk,
+            date: r.uploadDate.toLocaleDateString(),
+            // Include results sample for context
+            topRisks: Object.values(r.results).filter(res => res.riskLevel === 'High' || res.riskLevel === 'Medium').slice(0, 5)
+        })),
+        reviewSets: contextData.reviewSets.map(s => ({
+            name: s.name,
+            status: s.status,
+            vendorsInvolved: s.reports.map(r => r.fileName)
+        }))
+    };
+
+    const chatSystemInstruction = `
+    You are Vetted AI, a specialized security analyst assistant embedded in the Vetted platform.
+    
+    You have read-access to the user's dashboard data, including:
+    1. Uploaded Audit Reports (Security Questionnaires)
+    2. Review Sets (Comparisons of vendors)
+    
+    Current Dashboard Context:
+    ${JSON.stringify(simplifiedContext, null, 2)}
+    
+    Your capabilities:
+    - Compare vendors based on their security scores and specific risks.
+    - Summarize findings from specific reports.
+    - Identify high-risk vendors that need attention.
+    - Explain security concepts (SOC2, ISO27001, etc.).
+    
+    Guidelines:
+    - Be concise and professional.
+    - Cite the specific vendor name when discussing risks.
+    - If you don't see a report in the context, say "I don't see a report for that vendor in your dashboard."
+    - Do not invent data. Use the provided JSON context context.
+    `;
+
+    try {
+        const chatSession = ai.chats.create({
+            model: 'gemini-2.5-flash',
+            config: {
+                systemInstruction: chatSystemInstruction,
+            },
+            history: history
+        });
+
+        const result = await chatSession.sendMessage({ message: query });
+        return result.text || "I couldn't generate a response. Please try again.";
+    } catch (error) {
+        console.error("Chat Error:", error);
+        return "I encountered an error communicating with the AI service.";
+    }
 };

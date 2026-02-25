@@ -57,74 +57,22 @@ Output must be strict JSON matching the schema.
 const getClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const analyzeQuestionnaire = async (rows: QuestionnaireRow[]): Promise<Record<string, AnalysisResult>> => {
-  const ai = getClient();
-
-  // We limit the batch size to ensure the model pays attention to every row.
-  // For a real app, this would loop or queue. Here we take the first 50.
-  const batch = rows.slice(0, 50); 
-
-  const promptData = batch.map(r => ({
-    id: r.id,
-    question: r.question,
-    answer: r.answer
-  }));
-
-  const responseSchema = {
-    type: Type.OBJECT,
-    properties: {
-      results: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            id: { type: Type.STRING },
-            riskLevel: { type: Type.STRING, enum: ['High', 'Medium', 'Low', 'Pass'] },
-            feedback: { type: Type.STRING },
-            evidenceRequired: { type: Type.BOOLEAN },
-            complianceFlag: { type: Type.STRING, nullable: true }
-          },
-          required: ['id', 'riskLevel', 'feedback', 'evidenceRequired']
-        }
-      }
-    }
-  };
-
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: JSON.stringify(promptData),
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ rows }),
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No response from AI");
-
-    const json = JSON.parse(text);
-    
-    // Map back to a record keyed by ID
-    const resultsMap: Record<string, AnalysisResult> = {};
-    if (json.results && Array.isArray(json.results)) {
-        json.results.forEach((res: any) => {
-            // Normalize the output to ensure it matches our types
-            resultsMap[res.id] = {
-                rowId: res.id,
-                riskLevel: res.riskLevel,
-                feedback: res.feedback,
-                evidenceRequired: res.evidenceRequired,
-                complianceFlag: res.complianceFlag || undefined
-            };
-        });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
-    return resultsMap;
 
+    return await response.json();
   } catch (error) {
     console.error("AI Analysis Failed:", error);
-    // Return empty or fallback results in case of failure
     const fallback: Record<string, AnalysisResult> = {};
     rows.forEach(r => {
         fallback[r.id] = {

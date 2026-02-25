@@ -86,7 +86,7 @@ async function startServer() {
                 riskLevel: { type: Type.STRING, enum: ['High', 'Medium', 'Low', 'Pass'] },
                 feedback: { type: Type.STRING },
                 evidenceRequired: { type: Type.BOOLEAN },
-                complianceFlag: { type: Type.STRING, nullable: true }
+                complianceFlag: { type: Type.STRING }
               },
               required: ['id', 'riskLevel', 'feedback', 'evidenceRequired']
             }
@@ -94,14 +94,12 @@ async function startServer() {
         }
       };
 
+      const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nPlease analyze the following questionnaire data and return the results in the specified JSON format:\n\n${JSON.stringify(promptData)}`;
+
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
-        contents: `Please analyze the following questionnaire data and return the results in the specified JSON format: ${JSON.stringify(promptData)}`,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
-        },
+        contents: { parts: [{ text: fullPrompt }] },
+
       });
 
       const text = response.text;
@@ -126,7 +124,7 @@ async function startServer() {
       }
       res.json(resultsMap);
     } catch (error) {
-      console.error('AI Analysis Failed:', error);
+      console.error('AI Analysis Failed:', JSON.stringify(error, null, 2));
       res.status(500).json({ error: 'Failed to analyze questionnaire' });
     }
   });

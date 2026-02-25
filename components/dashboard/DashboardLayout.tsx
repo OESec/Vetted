@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FileText, Settings, LogOut, Plus, ChartPie, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Plus, ChartPie, Moon, Sun, ShieldQuestion } from 'lucide-react';
 import Logo from '../Logo';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   onLogout: () => void;
-  activeTab: 'overview' | 'reports' | 'upload' | 'settings';
-  onTabChange: (tab: 'overview' | 'reports' | 'upload' | 'settings') => void;
+  activeTab: 'overview' | 'reports' | 'upload' | 'settings' | 'governance';
+  onTabChange: (tab: 'overview' | 'reports' | 'upload' | 'settings' | 'governance') => void;
   userEmail?: string;
   onLogoClick?: () => void;
   isDarkMode?: boolean;
@@ -72,6 +72,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <Settings size={20} />
             <span className="font-medium">Settings</span>
           </button>
+
+          <button 
+            onClick={() => onTabChange('governance')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'governance' ? 'bg-primary text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
+          >
+            <ShieldQuestion size={20} />
+            <span className="font-medium">AI Governance</span>
+          </button>
         </nav>
 
         <div className="p-4 border-t border-gray-800">
@@ -98,6 +106,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             {activeTab === 'reports' && 'All Reports'}
             {activeTab === 'upload' && 'New Audit Analysis'}
             {activeTab === 'settings' && 'Platform Settings'}
+            {activeTab === 'governance' && 'AI Governance Alignment'}
           </h1>
           <div className="flex items-center space-x-4">
              {onToggleTheme && (

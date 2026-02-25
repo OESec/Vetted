@@ -20,6 +20,7 @@ import ReportViewer from './components/dashboard/ReportViewer';
 import ReviewSetViewer from './components/dashboard/ReviewSetViewer';
 import ReportsList from './components/dashboard/ReportsList';
 import SettingsView from './components/dashboard/SettingsView';
+import GovernanceView from './components/dashboard/GovernanceView';
 import CreateReviewSetModal from './components/dashboard/CreateReviewSetModal';
 import GlobalChat from './components/dashboard/GlobalChat';
 
@@ -352,7 +353,7 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
 
 function App() {
   const [view, setView] = useState<'landing' | 'dashboard' | 'auth'>('landing');
-  const [dashboardTab, setDashboardTab] = useState<'overview' | 'reports' | 'upload' | 'settings'>('overview');
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'reports' | 'upload' | 'settings' | 'governance'>('overview');
   const [uploadType, setUploadType] = useState<'template' | 'custom' | null>(null);
   
   // Theme State (Lifted for global platform access)
@@ -517,7 +518,7 @@ function App() {
       setCurrentReport(report);
   };
 
-  const handleTabChange = (tab: 'overview' | 'reports' | 'upload' | 'settings') => {
+  const handleTabChange = (tab: 'overview' | 'reports' | 'upload' | 'settings' | 'governance') => {
       setDashboardTab(tab);
       setCurrentReport(null);
       setActiveReviewSet(null);
@@ -841,6 +842,10 @@ function App() {
     // 6. Tab: Settings
     if (dashboardTab === 'settings') {
         return <SettingsView masterQuestionnaire={masterQuestionnaire} onUpdateMaster={setMasterQuestionnaire} />;
+    }
+
+    if (dashboardTab === 'governance') {
+      return <GovernanceView />;
     }
     
     return null;

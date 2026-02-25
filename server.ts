@@ -107,7 +107,11 @@ async function startServer() {
       const text = response.text;
       if (!text) throw new Error('No response from AI');
 
-      const json = JSON.parse(text);
+      // Extract JSON from markdown code block if present
+      const jsonMatch = text.match(/```(json)?(.*)```/s);
+      const jsonString = jsonMatch ? jsonMatch[2].trim() : text.trim();
+
+      const json = JSON.parse(jsonString);
       const resultsMap: Record<string, AnalysisResult> = {};
       if (json.results && Array.isArray(json.results)) {
         json.results.forEach((result: any) => {

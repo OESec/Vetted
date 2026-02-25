@@ -14,6 +14,8 @@ import Auth from './components/Auth';
 // Dashboard Components
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import UploadAnalyzer from './components/dashboard/UploadAnalyzer';
+import CustomUploadAnalyzer from './components/dashboard/CustomUploadAnalyzer';
+import UploadTypeChooser from './components/dashboard/UploadTypeChooser';
 import ReportViewer from './components/dashboard/ReportViewer';
 import ReviewSetViewer from './components/dashboard/ReviewSetViewer';
 import ReportsList from './components/dashboard/ReportsList';
@@ -351,6 +353,7 @@ const INITIAL_REVIEW_SETS: ReviewSet[] = [
 function App() {
   const [view, setView] = useState<'landing' | 'dashboard' | 'auth'>('landing');
   const [dashboardTab, setDashboardTab] = useState<'overview' | 'reports' | 'upload' | 'settings'>('overview');
+  const [uploadType, setUploadType] = useState<'template' | 'custom' | null>(null);
   
   // Theme State (Lifted for global platform access)
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -519,6 +522,7 @@ function App() {
       setCurrentReport(null);
       setActiveReviewSet(null);
       setPendingSetUploadId(null);
+      setUploadType(null); // Reset upload type when changing tabs
   };
 
   // --- CRUD Handlers ---
@@ -564,15 +568,99 @@ function App() {
     }
   };
 
+  const handleAssignReportToSet = (reportId: string, setId: string | null) => {
+    let reportToMove: AuditReport | undefined;
+
+    // First, remove the report from its current set, if any
+    const updatedSets = reviewSets.map(set => {
+        const reportIndex = set.reports.findIndex(r => r.id === reportId);
+        if (reportIndex > -1) {
+            reportToMove = set.reports[reportIndex];
+            const updatedReports = [...set.reports];
+            updatedReports.splice(reportIndex, 1);
+            return { ...set, reports: updatedReports };
+        }
+        return set;
+    });
+
+    if (!reportToMove) {
+        reportToMove = reports.find(r => r.id === reportId);
+    }
+
+    if (!reportToMove) return; // Should not happen
+
+    // Now, add the report to the new set, if a new set was chosen
+    if (setId) {
+        const finalSets = updatedSets.map(set => {
+            if (set.id === setId) {
+                return { ...set, reports: [reportToMove!, ...set.reports] };
+            }
+            return set;
+        });
+        setReviewSets(finalSets);
+    } else {
+        setReviewSets(updatedSets);
+    }
+  };
+
+  const handleCreateSetAndAssignReport = (reportId: string, setName: string, setDesc: string) => {
+    setReviewSets(prevSets => {
+      let reportToMove: AuditReport | undefined;
+
+      // First, find the report and remove it from its current set, if any
+      const setsWithoutReport = prevSets.map(set => {
+        const reportIndex = set.reports.findIndex(r => r.id === reportId);
+        if (reportIndex > -1) {
+          reportToMove = set.reports[reportIndex];
+          const updatedReports = [...set.reports];
+          updatedReports.splice(reportIndex, 1);
+          return { ...set, reports: updatedReports };
+        }
+        return set;
+      });
+
+      // If the report wasn't in any set, find it in the main reports list
+      if (!reportToMove) {
+        reportToMove = reports.find(r => r.id === reportId);
+      }
+
+      // This should not happen, but as a safeguard
+      if (!reportToMove) {
+        console.error("Could not find the report to assign.");
+        return prevSets; 
+      }
+
+      // Create the new set with the report already inside it
+      const newSet: ReviewSet = {
+        id: `set-${Date.now()}`,
+        name: setName,
+        description: setDesc,
+        status: 'Open',
+        dateCreated: new Date(),
+        reports: [reportToMove] // The report is added on creation
+      };
+
+      // Return the new state with the new set at the beginning
+      return [newSet, ...setsWithoutReport];
+    });
+  };
+
   // Rendering Dashboard Content
   const renderDashboardContent = () => {
     // 1. Viewing a Single Report (Highest Priority view)
     if (currentReport) {
+        // Find the review set this report belongs to, if any
+        const parentSet = reviewSets.find(set => set.reports.some(r => r.id === currentReport.id));
+        const reportWithSetId = { ...currentReport, reviewSetId: parentSet?.id };
+
         return <ReportViewer 
-                  report={currentReport} 
+                  report={reportWithSetId} 
                   onBack={handleBackToDashboard}
                   isDarkMode={isDarkMode}
                   onToggleTheme={toggleTheme}
+                  reviewSets={reviewSets}
+                  onAssignReportToSet={handleAssignReportToSet}
+                  onCreateSetAndAssignReport={handleCreateSetAndAssignReport}
                />;
     }
 
@@ -720,8 +808,23 @@ function App() {
     }
 
     // 4. Tab: Upload (New Analysis)
+    // 4. Tab: Upload (New Analysis)
     if (dashboardTab === 'upload') {
-        return <UploadAnalyzer onAnalysisComplete={handleAnalysisComplete} />;
+        // If a specific upload type hasn't been chosen, show the chooser.
+        if (!uploadType) {
+            return <UploadTypeChooser 
+                onSelectTemplate={() => setUploadType('template')}
+                onSelectCustom={() => setUploadType('custom')}
+            />;
+        }
+        
+        if (uploadType === 'template') {
+            return <UploadAnalyzer onAnalysisComplete={handleAnalysisComplete} />;
+        }
+        
+        if (uploadType === 'custom') {
+            return <CustomUploadAnalyzer onAnalysisComplete={handleAnalysisComplete} />;
+        }
     }
 
     // 5. Tab: Reports (Flat History List)

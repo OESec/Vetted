@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { AuditReport, AnalysisResult, Decision } from '../../types';
+
 import { 
   TriangleAlert, 
   CircleCheck, 
@@ -15,8 +15,11 @@ import {
   Filter,
   Check,
   Moon,
-  Sun
+  Sun,
+  MoreHorizontal
 } from 'lucide-react';
+import AssignSetModal from './AssignSetModal';
+import { ReviewSet } from '../../types';
 import Button from '../Button';
 
 interface ReportViewerProps {
@@ -24,12 +27,23 @@ interface ReportViewerProps {
   onBack: () => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  reviewSets: ReviewSet[];
+  onAssignReportToSet: (reportId: string, setId: string | null) => void;
+  onCreateSetAndAssignReport: (reportId: string, setName: string, setDesc: string) => void;
 }
 
 type SortKey = 'riskLevel' | 'decision';
 type SortDirection = 'asc' | 'desc';
 
-const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode, onToggleTheme }) => {
+const ReportViewer: React.FC<ReportViewerProps> = ({ 
+  report, 
+  onBack, 
+  isDarkMode, 
+  onToggleTheme, 
+  reviewSets, 
+  onAssignReportToSet, 
+  onCreateSetAndAssignReport 
+}) => {
   // Filter & Search State
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -48,6 +62,11 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
 
   // Tooltip State
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
+
+  // Modal State
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+
+  const currentSet = report.reviewSetId ? reviewSets.find(s => s.id === report.reviewSetId) : null;
 
   // --- Helpers ---
 
@@ -218,6 +237,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
   );
 
   return (
+    <>
     <div className={`space-y-6 animate-fade-in-up print:space-y-4 ${isDarkMode ? 'dark' : ''}`}>
       {/* Header Summary */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -237,7 +257,15 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
           <Button onClick={handleExportPDF} variant="secondary" size="sm" className="flex items-center dark:bg-gray-700 dark:text-white dark:border-gray-600">
             <Printer size={16} className="mr-2" /> Print / Save PDF
           </Button>
+          <button onClick={() => setIsAssignModalOpen(true)} className="p-2 text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600">
+            <MoreHorizontal size={16} />
+          </button>
         </div>
+        {currentSet && (
+            <div className="text-sm text-gray-500 dark:text-gray-400 -mt-2">
+              Part of Review Set: <span className="font-bold text-gray-700 dark:text-gray-200">{currentSet.name}</span>
+            </div>
+        )}
       </div>
 
       {/* KPI Cards */}
@@ -402,7 +430,24 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ report, onBack, isDarkMode,
         </div>
       </div>
     </div>
+
+    <AssignSetModal 
+      isOpen={isAssignModalOpen}
+      onClose={() => setIsAssignModalOpen(false)}
+      reviewSets={reviewSets}
+      currentSetId={report.reviewSetId || null}
+      onAssign={(setId) => {
+        onAssignReportToSet(report.id, setId);
+      }}
+      onCreateAndAssign={(setName, setDesc) => {
+        onCreateSetAndAssignReport(report.id, setName, setDesc);
+      }}
+    />
+    </>
   );
 };
 
 export default ReportViewer;
+
+
+

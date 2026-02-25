@@ -96,7 +96,7 @@ async function startServer() {
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: JSON.stringify(promptData),
+        contents: `Please analyze the following questionnaire data and return the results in the specified JSON format: ${JSON.stringify(promptData)}`,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
           responseMimeType: 'application/json',

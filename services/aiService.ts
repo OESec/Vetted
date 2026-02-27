@@ -2,9 +2,31 @@ import Fuse from 'fuse.js';
 import { QuestionnaireRow, AnalysisResult, AuditReport, ReviewSet, MasterQuestionnaireRow } from '../types';
 
 /**
- * Static Analysis Engine
- * Compares user uploaded questions against a master spreadsheet/data set.
- * Uses fuzzy matching to find the right question and the right risk level.
+ * Domain-Specific Red Flags
+ * These patterns trigger an automatic High Risk / Fail status regardless of fuzzy matching.
+ */
+const RED_FLAGS: Record<string, string[]> = {
+  'Encryption': ['3des', 'md5', 'sha1', 'tls 1.0', 'tls 1.1', 'wep', 'proprietary', 'base64', 'obfuscation'],
+  'Access Control': ['no mfa', 'shared accounts', 'sms 2fa', 'passwords only', 'complex passwords', 'no multi-factor'],
+  'Data Privacy': ['russia', 'china', 'undisclosed', 'plain text', 'unencrypted'],
+  'HR Security': ['no background checks', 'self-certified', 'trust-based', 'no checks'],
+  'Vulnerability': ['internal only', 'ad-hoc', 'no pentest', 'occasionally', 'irregular'],
+  'Compliance': ['no certification', 'readiness phase', 'in progress', 'what is', 'no report']
+};
+
+/**
+ * Normalizes strings by removing conversational filler and common prefixes.
+ */
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/^(yes|no|we use|currently|our|the|we have|yes,)\s+/i, '')
+    .trim();
+};
+
+/**
+ * Static Analysis Engine v2
+ * Deterministic comparison with category-aware pattern matching and confidence guardrails.
  */
 export const analyzeQuestionnaire = async (
   rows: QuestionnaireRow[], 
@@ -14,51 +36,71 @@ export const analyzeQuestionnaire = async (
   // 1. Setup Fuse for Question Matching
   const questionFuse = new Fuse(masterRows, {
     keys: ['question'],
-    threshold: 0.4, // Adjust for sensitivity
+    threshold: 0.3, // Stricter threshold for question matching
     includeScore: true
   });
 
   const resultsMap: Record<string, AnalysisResult> = {};
 
   rows.forEach(row => {
-    // Find the best matching question in the master data
+    const normalizedAnswer = normalizeText(row.answer);
+    const category = row.category || 'General';
+
+    // 2. Check for Category-Specific Red Flags first
+    const domainFlags = RED_FLAGS[category] || [];
+    const foundFlag = domainFlags.find(flag => normalizedAnswer.includes(flag));
+
+    if (foundFlag) {
+      resultsMap[row.id] = {
+        rowId: row.id,
+        riskLevel: 'High',
+        feedback: `Critical technical discrepancy: "${foundFlag}" detected in ${category} context. This standard is considered insecure or non-compliant.`,
+        evidenceRequired: true,
+        complianceFlag: "Technical Policy Violation"
+      };
+      return;
+    }
+
+    // 3. Find the best matching question in the master data
     const questionMatches = questionFuse.search(row.question);
     const bestMatch = questionMatches[0];
 
-    if (bestMatch) {
+    if (bestMatch && (bestMatch.score || 1) < 0.4) {
       const masterRow = bestMatch.item;
       
-      // 2. Setup Fuse for Answer Matching within the matched question
-      // We compare the user's answer against the three possible outcomes in the master
+      // 4. Setup Fuse for Answer Matching
       const answerOptions = [
         { level: 'Pass' as const, text: masterRow.passAnswer },
-        { level: 'Medium' as const, text: masterRow.considerAnswer }, // Mapping 'Consider' to 'Medium'
+        { level: 'Medium' as const, text: masterRow.considerAnswer },
         { level: 'High' as const, text: masterRow.failAnswer }
       ];
 
       const answerFuse = new Fuse(answerOptions, {
         keys: ['text'],
-        threshold: 0.6
+        threshold: 0.4, // Stricter threshold for answer matching
+        includeScore: true
       });
 
-      const answerMatches = answerFuse.search(row.answer);
+      // Match normalized answer against normalized master options
+      const answerMatches = answerFuse.search(normalizedAnswer);
       const bestAnswerMatch = answerMatches[0];
 
-      if (bestAnswerMatch) {
+      // Confidence Guardrail: Only accept "Pass" if the match is very strong
+      if (bestAnswerMatch && (bestAnswerMatch.score || 1) < 0.3) {
         const result = bestAnswerMatch.item;
         resultsMap[row.id] = {
           rowId: row.id,
           riskLevel: result.level,
-          feedback: `Matched with master question: "${masterRow.question}". Answer aligns with "${result.text}".`,
+          feedback: `Matched with master question: "${masterRow.question}". Answer aligns with standard: "${result.text}".`,
           evidenceRequired: result.level !== 'Pass',
           complianceFlag: result.level === 'High' ? 'Policy Mismatch' : undefined
         };
       } else {
-        // Fallback: If answer doesn't match well, default to Medium/Consider
+        // Low confidence match or unique technical detail
         resultsMap[row.id] = {
           rowId: row.id,
           riskLevel: 'Medium',
-          feedback: `Matched question: "${masterRow.question}", but the answer is unique. Manual review suggested.`,
+          feedback: `Matched question: "${masterRow.question}", but the answer contains unique technical details or low-confidence alignment. Manual review required.`,
           evidenceRequired: true
         };
       }
@@ -75,7 +117,7 @@ export const analyzeQuestionnaire = async (
   });
 
   // Simulate a small delay to keep the UI feel consistent
-  await new Promise(resolve => setTimeout(resolve, 800));
+  await new Promise(resolve => setTimeout(resolve, 600));
 
   return resultsMap;
 };

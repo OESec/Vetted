@@ -1,125 +1,90 @@
-import Fuse from 'fuse.js';
-import { QuestionnaireRow, AnalysisResult, AuditReport, ReviewSet, MasterQuestionnaireRow } from '../types';
+import { GoogleGenAI, Type } from "@google/genai";
+import { QuestionnaireRow, AnalysisResult, AuditReport, ReviewSet } from '../types';
 
-/**
- * Domain-Specific Red Flags
- * These patterns trigger an automatic High Risk / Fail status regardless of fuzzy matching.
- */
-const RED_FLAGS: Record<string, string[]> = {
-  'Encryption': ['3des', 'md5', 'sha1', 'tls 1.0', 'tls 1.1', 'wep', 'proprietary', 'base64', 'obfuscation'],
-  'Access Control': ['no mfa', 'shared accounts', 'sms 2fa', 'passwords only', 'complex passwords', 'no multi-factor'],
-  'Data Privacy': ['russia', 'china', 'undisclosed', 'plain text', 'unencrypted'],
-  'HR Security': ['no background checks', 'self-certified', 'trust-based', 'no checks'],
-  'Vulnerability': ['internal only', 'ad-hoc', 'no pentest', 'occasionally', 'irregular'],
-  'Compliance': ['no certification', 'readiness phase', 'in progress', 'what is', 'no report']
-};
+// Few-shot training examples to simulate "Historical Data"
+const TRAINING_EXAMPLES = `
+EXAMPLE 1:
+Question: "Do you encrypt data at rest?"
+Answer: "We use a proprietary hashing algorithm."
+Analysis: {
+  "riskLevel": "High",
+  "feedback": "Proprietary encryption is a security anti-pattern. Industry standard AES-256 is required.",
+  "evidenceRequired": true,
+  "complianceFlag": "Non-compliant with encryption standards"
+}
 
-/**
- * Normalizes strings by removing conversational filler and common prefixes.
- */
-const normalizeText = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/^(yes|no|we use|currently|our|the|we have|yes,)\s+/i, '')
-    .trim();
-};
+EXAMPLE 2:
+Question: "Do you conduct background checks on employees?"
+Answer: "Yes, for all employees."
+Analysis: {
+  "riskLevel": "Pass",
+  "feedback": "Compliant response.",
+  "evidenceRequired": false,
+  "complianceFlag": null
+}
 
-/**
- * Static Analysis Engine v2
- * Deterministic comparison with category-aware pattern matching and confidence guardrails.
- */
-export const analyzeQuestionnaire = async (
-  rows: QuestionnaireRow[], 
-  masterRows: MasterQuestionnaireRow[]
-): Promise<Record<string, AnalysisResult>> => {
-  
-  // 1. Setup Fuse for Question Matching
-  const questionFuse = new Fuse(masterRows, {
-    keys: ['question'],
-    threshold: 0.3, // Stricter threshold for question matching
-    includeScore: true
-  });
+EXAMPLE 3:
+Question: "How do you handle incident response?"
+Answer: "We have a process in place."
+Analysis: {
+  "riskLevel": "Medium",
+  "feedback": "Vague response. Needs details on SLA, communication channels, and retrospective process.",
+  "evidenceRequired": true,
+  "complianceFlag": "Missing Incident Response Plan"
+}
+`;
 
-  const resultsMap: Record<string, AnalysisResult> = {};
+const SYSTEM_INSTRUCTION = `
+You are an expert Information Security Auditor for enterprise vendor risk management.
+You have been trained on historical security questionnaires and compliance outcomes (SOC2, ISO 27001).
 
-  rows.forEach(row => {
-    const normalizedAnswer = normalizeText(row.answer);
-    const category = row.category || 'General';
+Your task is to review new supplier questionnaire answers and provide structured feedback.
 
-    // 2. Check for Category-Specific Red Flags first
-    const domainFlags = RED_FLAGS[category] || [];
-    const foundFlag = domainFlags.find(flag => normalizedAnswer.includes(flag));
+${TRAINING_EXAMPLES}
 
-    if (foundFlag) {
-      resultsMap[row.id] = {
-        rowId: row.id,
-        riskLevel: 'High',
-        feedback: `Critical technical discrepancy: "${foundFlag}" detected in ${category} context. This standard is considered insecure or non-compliant.`,
-        evidenceRequired: true,
-        complianceFlag: "Technical Policy Violation"
-      };
-      return;
+Rules for Analysis:
+1. **High Risk**: Missing critical controls (Encryption, MFA, Background Checks), proprietary crypto, or admitted non-compliance.
+2. **Medium Risk**: Vague answers ("We follow best practices"), missing specific details (e.g., frequency of pen tests), or partial compliance.
+3. **Low Risk**: Minor process gaps that do not directly threaten data integrity.
+4. **Pass**: Answer is specific, verifiable, and meets standard security controls.
+
+Output must be strict JSON matching the schema.
+`;
+
+// Initialize AI client (Assuming API_KEY is available in environment or handled via proxy in production)
+// Note: For this frontend-only demo, we rely on the process.envshim or hardcoded key if needed, 
+// but sticking to the request of using process.env.API_KEY as per instructions.
+const getClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+export const analyzeQuestionnaire = async (rows: QuestionnaireRow[]): Promise<Record<string, AnalysisResult>> => {
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ rows }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // 3. Find the best matching question in the master data
-    const questionMatches = questionFuse.search(row.question);
-    const bestMatch = questionMatches[0];
-
-    if (bestMatch && (bestMatch.score || 1) < 0.4) {
-      const masterRow = bestMatch.item;
-      
-      // 4. Setup Fuse for Answer Matching
-      const answerOptions = [
-        { level: 'Pass' as const, text: masterRow.passAnswer },
-        { level: 'Medium' as const, text: masterRow.considerAnswer },
-        { level: 'High' as const, text: masterRow.failAnswer }
-      ];
-
-      const answerFuse = new Fuse(answerOptions, {
-        keys: ['text'],
-        threshold: 0.4, // Stricter threshold for answer matching
-        includeScore: true
-      });
-
-      // Match normalized answer against normalized master options
-      const answerMatches = answerFuse.search(normalizedAnswer);
-      const bestAnswerMatch = answerMatches[0];
-
-      // Confidence Guardrail: Only accept "Pass" if the match is very strong
-      if (bestAnswerMatch && (bestAnswerMatch.score || 1) < 0.3) {
-        const result = bestAnswerMatch.item;
-        resultsMap[row.id] = {
-          rowId: row.id,
-          riskLevel: result.level,
-          feedback: `Matched with master question: "${masterRow.question}". Answer aligns with standard: "${result.text}".`,
-          evidenceRequired: result.level !== 'Pass',
-          complianceFlag: result.level === 'High' ? 'Policy Mismatch' : undefined
+    return await response.json();
+  } catch (error) {
+    console.error("AI Analysis Failed:", error);
+    const fallback: Record<string, AnalysisResult> = {};
+    rows.forEach(r => {
+        fallback[r.id] = {
+            rowId: r.id,
+            riskLevel: 'Medium',
+            feedback: "AI Analysis failed to process this row. Please review manually.",
+            evidenceRequired: true,
+            complianceFlag: "Analysis Error"
         };
-      } else {
-        // Low confidence match or unique technical detail
-        resultsMap[row.id] = {
-          rowId: row.id,
-          riskLevel: 'Medium',
-          feedback: `Matched question: "${masterRow.question}", but the answer contains unique technical details or low-confidence alignment. Manual review required.`,
-          evidenceRequired: true
-        };
-      }
-    } else {
-      // No question match found
-      resultsMap[row.id] = {
-        rowId: row.id,
-        riskLevel: 'Medium',
-        feedback: "No direct match found in master spreadsheet. Manual assessment required.",
-        evidenceRequired: true,
-        complianceFlag: "Unknown Question"
-      };
-    }
-  });
-
-  // Simulate a small delay to keep the UI feel consistent
-  await new Promise(resolve => setTimeout(resolve, 600));
-
-  return resultsMap;
+    });
+    return fallback;
+  }
 };
 
 export const sendGlobalChatMessage = async (
@@ -127,12 +92,62 @@ export const sendGlobalChatMessage = async (
   history: { role: string; parts: { text: string }[] }[],
   contextData: { reports: AuditReport[]; reviewSets: ReviewSet[] }
 ): Promise<string> => {
-    // We'll keep the chat as is for now, or we could also make it static.
-    // The user specifically complained about the spreadsheet analysis.
-    // However, the chat also uses Gemini. If the user wants NO AI, I should probably disable this or make it a simple keyword search.
-    // The user said "I don't want those errors anymore. I don't know what was causing it, so I had to roll back."
-    // Let's make the chat return a static "AI Chat is currently disabled" or similar if we want to be safe,
-    // but the request was primarily about the spreadsheet comparison.
+    const ai = getClient();
+
+    // Simplify Context Data to reduce token usage while keeping essential info
+    const simplifiedContext = {
+        availableReports: contextData.reports.map(r => ({
+            id: r.id,
+            vendor: r.fileName,
+            score: r.summary.score,
+            criticalRisks: r.summary.highRisk,
+            date: r.uploadDate.toLocaleDateString(),
+            // Include results sample for context
+            topRisks: Object.values(r.results).filter(res => res.riskLevel === 'High' || res.riskLevel === 'Medium').slice(0, 5)
+        })),
+        reviewSets: contextData.reviewSets.map(s => ({
+            name: s.name,
+            status: s.status,
+            vendorsInvolved: s.reports.map(r => r.fileName)
+        }))
+    };
+
+    const chatSystemInstruction = `
+    You are Vetted AI, a specialized security analyst assistant embedded in the Vetted platform.
     
-    return "The AI Chat feature is currently undergoing maintenance as we transition to a deterministic assessment model. Please use the dashboard to view your static analysis reports.";
+    You have read-access to the user's dashboard data, including:
+    1. Uploaded Audit Reports (Security Questionnaires)
+    2. Review Sets (Comparisons of vendors)
+    
+    Current Dashboard Context:
+    ${JSON.stringify(simplifiedContext, null, 2)}
+    
+    Your capabilities:
+    - Compare vendors based on their security scores and specific risks.
+    - Summarize findings from specific reports.
+    - Identify high-risk vendors that need attention.
+    - Explain security concepts (SOC2, ISO27001, etc.).
+    
+    Guidelines:
+    - Be concise and professional.
+    - Cite the specific vendor name when discussing risks.
+    - If you don't see a report in the context, say "I don't see a report for that vendor in your dashboard."
+    - Do not invent data. Use the provided JSON context context.
+    `;
+
+    try {
+        const chatSession = ai.chats.create({
+            model: 'gemini-3-flash-preview',
+            config: {
+                systemInstruction: chatSystemInstruction,
+            },
+            history: history
+        });
+
+        const result = await chatSession.sendMessage({ message: query });
+        return result.text || "I couldn't generate a response. Please try again.";
+    } catch (error) {
+        console.error("Chat Error:", error);
+        return "I encountered an error communicating with the AI service.";
+    }
 };

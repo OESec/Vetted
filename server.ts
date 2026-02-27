@@ -97,19 +97,18 @@ async function startServer() {
       const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nPlease analyze the following questionnaire data and return the results in the specified JSON format:\n\n${JSON.stringify(promptData)}`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: fullPrompt }] },
-
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: responseSchema
+        }
       });
 
       const text = response.text;
       if (!text) throw new Error('No response from AI');
 
-      // Extract JSON from markdown code block if present
-      const jsonMatch = text.match(/```(json)?(.*)```/s);
-      const jsonString = jsonMatch ? jsonMatch[2].trim() : text.trim();
-
-      const json = JSON.parse(jsonString);
+      const json = JSON.parse(text);
       const resultsMap: Record<string, AnalysisResult> = {};
       if (json.results && Array.isArray(json.results)) {
         json.results.forEach((result: any) => {

@@ -3,10 +3,11 @@ import { CloudUpload, FileSpreadsheet, Loader2, TriangleAlert, FileText, FlaskCo
 import Button from '../Button';
 import { parseCSV } from '../../utils/csvParser';
 import { analyzeQuestionnaire } from '../../services/aiService';
-import { AuditReport, QuestionnaireRow } from '../../types';
+import { AuditReport, QuestionnaireRow, MasterQuestionnaireRow } from '../../types';
 
 interface UploadAnalyzerProps {
   onAnalysisComplete: (report: AuditReport) => void;
+  masterQuestionnaire: MasterQuestionnaireRow[];
 }
 
 const SAMPLE_CSV_DATA = `Question,Answer,Category,Supplier
@@ -33,7 +34,7 @@ const generateId = () => {
     });
 };
 
-const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete }) => {
+const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete, masterQuestionnaire }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -107,8 +108,8 @@ const UploadAnalyzer: React.FC<UploadAnalyzerProps> = ({ onAnalysisComplete }) =
       }
 
       // 2. Analyze
-      setLoadingStep(`Analysing ${rows.length} responses against compliance models...`);
-      const results = await analyzeQuestionnaire(rows);
+      setLoadingStep(`Analysing ${rows.length} responses against master spreadsheet...`);
+      const results = await analyzeQuestionnaire(rows, masterQuestionnaire);
 
       // 3. Compile Report
       setLoadingStep('Generating Risk Report...');

@@ -820,11 +820,11 @@ function App() {
         }
         
         if (uploadType === 'template') {
-            return <UploadAnalyzer onAnalysisComplete={handleAnalysisComplete} />;
+            return <UploadAnalyzer onAnalysisComplete={handleAnalysisComplete} masterQuestionnaire={masterQuestionnaire} />;
         }
         
         if (uploadType === 'custom') {
-            return <CustomUploadAnalyzer onAnalysisComplete={handleAnalysisComplete} />;
+            return <CustomUploadAnalyzer onAnalysisComplete={handleAnalysisComplete} masterQuestionnaire={masterQuestionnaire} />;
         }
     }
 
